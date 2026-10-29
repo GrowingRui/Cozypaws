@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useAnimate, useReducedMotion } from 'motion/react'
-import type { CompanionMode, PetState } from '../game/state'
+import type { CompanionMode, DecorId, PetState } from '../game/state'
 import type { PetMood } from '../game/types'
 import { INK } from '../pets/parts'
 import { PetSprite } from '../pets/PetSprite'
@@ -22,9 +22,13 @@ type StudyRoomProps = {
   /** 'focus' keeps things calm; 'break' wakes everyone up; 'idle' is the setup preview. */
   phase: 'focus' | 'break' | 'idle'
   compact?: boolean
+  /** Decorations bought in the shop. */
+  decor?: DecorId[]
 }
 
-export function StudyRoom({ companions, phase, compact = false }: StudyRoomProps) {
+const BULBS = ['#ffe29a', '#f6b8c6', '#bfe6d1', '#cfc3f0', '#ffcfae', '#ffe29a', '#f6b8c6', '#bfe6d1', '#cfc3f0']
+
+export function StudyRoom({ companions, phase, compact = false, decor = [] }: StudyRoomProps) {
   const nappers = companions.filter((c) => c.mode === 'nap')
   const hangers = companions.filter((c) => c.mode === 'hang')
   const lampOn = phase === 'focus'
@@ -52,6 +56,30 @@ export function StudyRoom({ companions, phase, compact = false }: StudyRoomProps
           </div>
           <div className="h-2.5 rounded-full bg-[#e9c3a3] shadow-[var(--shadow-base)]" />
         </div>
+        {decor.includes('lights') && (
+          <svg viewBox="0 0 400 40" preserveAspectRatio="none" className="absolute inset-x-0 top-[3%] h-[12%] w-full overflow-visible" aria-label="Fairy lights">
+            <path d="M0 6 Q100 34 200 10 T400 8" fill="none" stroke="#7a5f5c" strokeWidth={1.5} vectorEffect="non-scaling-stroke" />
+            {BULBS.map((c, i) => {
+              const x = 20 + i * 45
+              const y = i % 2 ? 22 : 16
+              return (
+                <motion.ellipse
+                  key={i}
+                  cx={x}
+                  cy={y}
+                  rx={5}
+                  ry={7}
+                  fill={c}
+                  stroke="#4a3434"
+                  strokeWidth={1.2}
+                  vectorEffect="non-scaling-stroke"
+                  animate={{ opacity: [1, 0.55, 1] }}
+                  transition={{ duration: 2.6, repeat: Infinity, delay: (i % 3) * 0.8 }}
+                />
+              )
+            })}
+          </svg>
+        )}
         {/* Floor */}
         <div className="absolute inset-x-0 bottom-[30%] h-3 bg-milk" />
         <div
@@ -97,6 +125,13 @@ export function StudyRoom({ companions, phase, compact = false }: StudyRoomProps
           </svg>
         </div>
 
+        {decor.includes('plant') && (
+          <svg viewBox="0 0 60 90" className="absolute bottom-[12%] right-[33%] w-[8%] min-w-10 overflow-visible" aria-label="Desk plant">
+            <path d="M30 52C14 44 8 26 14 14c10 6 16 20 16 38ZM30 52c16-8 22-26 16-38-10 6-16 20-16 38Z" fill="#9fd4b6" stroke={INK} strokeWidth={2.5} strokeLinejoin="round" />
+            <path d="M30 52C28 34 30 18 30 6" fill="none" stroke="#7fbf9b" strokeWidth={3} strokeLinecap="round" />
+            <path d="M14 52h32l-4 32a4 4 0 0 1-4 4H22a4 4 0 0 1-4-4Z" fill="#ffcfae" stroke={INK} strokeWidth={2.5} strokeLinejoin="round" />
+          </svg>
+        )}
         {/* Cushions with nappers */}
         {nappers.map(({ pet }, i) => (
           <div key={pet.id} className="absolute bottom-[6%]" style={CUSHION_SPOTS[i]}>

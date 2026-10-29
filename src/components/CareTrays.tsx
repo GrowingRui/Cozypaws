@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'motion/react'
 import { FETCH_ENERGY, PLAY_ENERGY } from '../game/logic'
-import type { PetState, TogetherGame } from '../game/state'
+import type { PetState, TogetherGame, ToyId } from '../game/state'
 import { friendLevel, friendshipOf, TOGETHER } from '../game/together'
 import { useGame } from '../game/GameContext'
 import { PetSprite } from '../pets/PetSprite'
@@ -9,13 +9,13 @@ import { Icon } from './Icon'
 import { springs, toneClasses } from './tones'
 import { TrayOption, TrayShell } from './TrayShell'
 
-type PlayTrayProps = { id: string; onPlay: (toy: 'play' | 'fetch') => void; onClose: () => void }
+type PlayTrayProps = { id: string; toys: ToyId[]; onPlay: (toy: 'play' | 'fetch' | ToyId) => void; onClose: () => void }
 
-/** Solo toys for the pet on stage. */
-export function PlayTray({ id, onPlay, onClose }: PlayTrayProps) {
+/** Solo toys for the pet on stage: the two starters, plus any bought in the shop. */
+export function PlayTray({ id, toys, onPlay, onClose }: PlayTrayProps) {
   return (
     <TrayShell id={id} title="Playtime!" label="Choose a toy" onClose={onClose}>
-      <div className="grid grid-cols-2 gap-2 sm:gap-3">
+      <div className={`grid gap-2 sm:gap-3 ${toys.length ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-2'}`}>
         <TrayOption
           chip={`${toneClasses.lavender.chip} ${toneClasses.lavender.ink}`}
           icon={<Icon name="yarn" size={26} />}
@@ -30,7 +30,26 @@ export function PlayTray({ id, onPlay, onClose }: PlayTrayProps) {
           lines={['+18 Happiness', `Needs ${FETCH_ENERGY} Energy`]}
           onClick={() => onPlay('fetch')}
         />
+        {toys.includes('feather') && (
+          <TrayOption
+            chip={`${toneClasses.lavender.chip} ${toneClasses.lavender.ink}`}
+            icon={<Icon name="feather" size={26} />}
+            title="Feather wand"
+            lines={['+16 Happiness', 'Easy on energy']}
+            onClick={() => onPlay('feather')}
+          />
+        )}
+        {toys.includes('bubbles') && (
+          <TrayOption
+            chip={`${toneClasses.mint.chip} ${toneClasses.mint.ink}`}
+            icon={<Icon name="bubbles" size={26} />}
+            title="Bubble wand"
+            lines={['+12 Happiness', '+5 Health']}
+            onClick={() => onPlay('bubbles')}
+          />
+        )}
       </div>
+      {toys.length < 2 && <p className="mt-2 px-1 text-xs text-cocoa-soft">More toys are waiting in the Shop.</p>}
     </TrayShell>
   )
 }

@@ -22,6 +22,12 @@ export type IconName =
   | 'drumstick'
   | 'sparkle'
   | 'dice'
+  | 'cup'
+  | 'cake'
+  | 'feather'
+  | 'bubbles'
+  | 'lights'
+  | 'hanger'
   | 'book'
   | 'pause'
   | 'play'
@@ -56,6 +62,54 @@ const paths: Record<IconName, React.ReactNode> = {
   ),
   pause: <path d="M9 6v12M15 6v12" strokeWidth={3} />,
   play: <path d="M8 5.5v13l10-6.5Z" fill="currentColor" fillOpacity=".25" />,
+  cup: (
+    <>
+      <path d="M6 8h12l-1.3 11.2a1.5 1.5 0 0 1-1.5 1.3H8.8a1.5 1.5 0 0 1-1.5-1.3Z" fill="currentColor" fillOpacity=".22" />
+      <path d="M6 8h12l-1.3 11.2a1.5 1.5 0 0 1-1.5 1.3H8.8a1.5 1.5 0 0 1-1.5-1.3ZM5 8h14M13 8l2-5h3" />
+      <circle cx="10.5" cy="13" r="1" fill="currentColor" />
+      <circle cx="13.5" cy="15.5" r="1" fill="currentColor" />
+    </>
+  ),
+  cake: (
+    <>
+      <path d="M4 13h16v6a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19Z" fill="currentColor" fillOpacity=".22" />
+      <path d="M4 13h16v6a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19ZM4 13c0-2 1.5-3 3-3h10c1.5 0 3 1 3 3M4 15.5c2 1.3 4 1.3 5.3 0 1.4 1.3 4 1.3 5.4 0 1.3 1.3 3.3 1.3 5.3 0M12 10V7" />
+      <path d="M12 3.5c1 1.2 1 2.2 0 3-1-.8-1-1.8 0-3Z" fill="currentColor" />
+    </>
+  ),
+  feather: (
+    <>
+      <path d="M19 4c-7 0-12 5-12 11v4l3-3c6 0 9-6 9-12Z" fill="currentColor" fillOpacity=".22" />
+      <path d="M19 4c-7 0-12 5-12 11v4l3-3c6 0 9-6 9-12ZM4 21l9-9M11 11h4M9 14h4" />
+    </>
+  ),
+  bubbles: (
+    <>
+      <circle cx="9" cy="14" r="5.5" fill="currentColor" fillOpacity=".18" />
+      <circle cx="9" cy="14" r="5.5" />
+      <circle cx="17" cy="7" r="3.5" />
+      <circle cx="18" cy="16" r="2" />
+      <path d="M6.5 12a3 3 0 0 1 2.5-1.5" />
+    </>
+  ),
+  lights: (
+    <>
+      <path d="M3 5c4 4 14 4 18 0" />
+      {[5.5, 10, 14, 18.5].map((x, i) => (
+        <path key={x} d={`M${x} ${i === 0 || i === 3 ? 7 : 8.3}v1.5`} />
+      ))}
+      {[5.5, 10, 14, 18.5].map((x, i) => (
+        <ellipse key={`b${x}`} cx={x} cy={i === 0 || i === 3 ? 11 : 12.3} rx="1.8" ry="2.4" fill="currentColor" fillOpacity=".3" />
+      ))}
+    </>
+  ),
+  hanger: (
+    <>
+      <path d="M12 8.5V7.5a2 2 0 1 0-2-2" />
+      <path d="M12 8.5 3.5 15a1.6 1.6 0 0 0 1 2.9h15a1.6 1.6 0 0 0 1-2.9Z" fill="currentColor" fillOpacity=".18" />
+      <path d="M12 8.5 3.5 15a1.6 1.6 0 0 0 1 2.9h15a1.6 1.6 0 0 0 1-2.9Z" />
+    </>
+  ),
   dice: (
     <>
       <rect x="4" y="4" width="16" height="16" rx="4.5" fill="currentColor" fillOpacity=".18" />

@@ -70,7 +70,7 @@ describe('feeding', () => {
   })
 
   it('refuses when out of that food, without changing stats', () => {
-    const empty = { ...fresh({ fullness: 40 }), inventory: { kibble: 0, cookie: 1, veggies: 1 } }
+    const empty = { ...fresh({ fullness: 40 }), inventory: { kibble: 0, cookie: 1, veggies: 1, smoothie: 0, cake: 0 } }
     const g = gameReducer(empty, { type: 'feed', food: 'kibble', now: T0 })
     expect(g.event).toMatchObject({ kind: 'refuse', reason: 'noFood' })
     expect(stats(g).fullness).toBe(40)

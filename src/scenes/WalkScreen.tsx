@@ -6,7 +6,7 @@ import { Icon, type IconName } from '../components/Icon'
 import { Burst } from '../components/Particles'
 import { springs } from '../components/tones'
 import { useGame } from '../game/GameContext'
-import { FOOD_ORDER, FOODS, type FoodId } from '../game/items'
+import { BASIC_FOODS, FOODS, type FoodId } from '../game/items'
 import { walkChatter, walkEventLine } from '../game/messages'
 import { SPECIES } from '../game/pets'
 import { STAT_KEYS, type PetState, type RouteId, type StatKey, type WalkEventKind } from '../game/state'
@@ -108,7 +108,7 @@ export function WalkScreen({ onDone }: { onDone: () => void }) {
     const pool = EVENT_WEIGHTS.filter(([k]) => group || !WALK_EVENTS[k].groupOnly)
     let roll = Math.random() * pool.reduce((a, [, wt]) => a + wt, 0)
     const kind = pool.find(([, wt]) => (roll -= wt) < 0)?.[0] ?? 'acorn'
-    const food: FoodId | undefined = kind === 'snack' ? FOOD_ORDER[Math.floor(Math.random() * FOOD_ORDER.length)] : undefined
+    const food: FoodId | undefined = kind === 'snack' ? BASIC_FOODS[Math.floor(Math.random() * BASIC_FOODS.length)] : undefined
     walkEvent(kind, food)
     const walkerNames = w.petIds.map((id) => stateRef.current.pets.find((p) => p.id === id)?.name ?? '')
     setToast({ id: ++seq.current, kind, ...walkEventLine(kind, walkerNames, food) })

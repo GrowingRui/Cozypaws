@@ -19,7 +19,7 @@ import { activePet, MAX_PETS, STAT_KEYS, type PetState, type StatKey, type Toget
 import { friendLevel, friendshipOf } from '../game/together'
 import type { PetMood } from '../game/types'
 import { PetSprite } from '../pets/PetSprite'
-import { BallProp, CatchProp, FoodProp, MiniBowl, PatProp, TugProp, YarnProp } from './HomeProps'
+import { BallProp, BubblesProp, CatchProp, FeatherProp, FoodProp, MiniBowl, PatProp, TugProp, YarnProp } from './HomeProps'
 import { Stage } from './Stage'
 
 const STAT_STYLE: Record<StatKey, { icon: IconName; tone: Tone }> = {
@@ -44,7 +44,7 @@ const CUDDLE_SPOTS: CSSProperties[] = [
 ]
 
 type Reaction = { mood: PetMood; ms: number; id: number }
-type PropShown = { kind: 'feed' | 'pet' | 'play' | 'fetch'; food?: FoodId; id: number }
+type PropShown = { kind: 'feed' | 'pet' | 'play' | 'fetch' | 'feather' | 'bubbles'; food?: FoodId; id: number }
 type BurstShown = { kind: BurstKind; id: number; x: string; y: string }
 type Bubble = { text: string; id: number }
 type Tray = 'food' | 'play' | 'together' | null
@@ -134,6 +134,12 @@ export function HomeScreen({ onAdopt, welcome = false }: HomeScreenProps) {
         setReaction({ mood: 'excited', ms: 1900, id })
         setProp({ kind: 'fetch', id })
         burst('sparkles', '50%', '30%')
+        break
+      case 'feather':
+      case 'bubbles':
+        setReaction({ mood: 'excited', ms: 2000, id })
+        setProp({ kind: event.kind, id })
+        burst(event.kind === 'bubbles' ? 'sparkles' : 'stars', '50%', '25%')
         break
       case 'together':
         // The buddy joins on stage for the game, then wanders back to their spot.
@@ -350,6 +356,8 @@ export function HomeScreen({ onAdopt, welcome = false }: HomeScreenProps) {
                     {prop?.kind === 'pet' && <PatProp key={`prop-${prop.id}`} />}
                     {prop?.kind === 'play' && <YarnProp key={`prop-${prop.id}`} />}
                     {prop?.kind === 'fetch' && <BallProp key={`prop-${prop.id}`} />}
+                    {prop?.kind === 'feather' && <FeatherProp key={`prop-${prop.id}`} />}
+                    {prop?.kind === 'bubbles' && <BubblesProp key={`prop-${prop.id}`} />}
                     {!buddy &&
                       bursts.map((b) => <Burst key={`burst-${b.id}`} kind={b.kind} x={b.x} y={b.y} />)}
 
@@ -453,7 +461,7 @@ export function HomeScreen({ onAdopt, welcome = false }: HomeScreenProps) {
 
           <AnimatePresence mode="wait">
             {tray === 'food' && <FoodTray key="food" id="care-tray" inventory={state.inventory} onPick={feed} onClose={closeTray} />}
-            {tray === 'play' && <PlayTray key="play" id="care-tray" onPlay={(toy) => care(toy)} onClose={closeTray} />}
+            {tray === 'play' && <PlayTray key="play" id="care-tray" toys={state.owned.toys} onPlay={(toy) => care(toy)} onClose={closeTray} />}
             {tray === 'together' && (
               <TogetherTray
                 key="together"

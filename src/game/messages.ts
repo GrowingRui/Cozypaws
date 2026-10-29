@@ -11,6 +11,8 @@ const FEED = {
   kibble: ['Crunch crunch!', 'Yum! So tasty!', 'Kibble, my old friend.'],
   cookie: ['A treat? For me?!', 'Best snack ever!', 'Sweet as a star!'],
   veggies: ['Fresh and crunchy!', 'I feel healthy already!', 'Greens make me strong!'],
+  smoothie: ['Berry blast! I feel zippy!', 'Slurp! So refreshing!'],
+  cake: ['Honey cake?! Best day ever!', 'Sweet, sticky and perfect!'],
 }
 
 const CONTENT: Record<Species, string[]> = {
@@ -33,6 +35,14 @@ export function eventLine(event: GameEvent, species: Species, nameOf: (id: strin
       return event.diminished ? 'Phew, that was a lot of yarn!' : pick(['Got it! Got it!', 'Again! Again!', 'This yarn is mine!'])
     case 'fetch':
       return event.diminished ? 'Huff... one more?' : pick(['Fetch! Here it is!', 'Throw it again!', 'I caught it!'])
+    case 'feather':
+      return event.diminished ? 'Phew, that feather is fast!' : pick(['Got the feather! Almost!', 'Swish swish swish!', 'I’ll catch it this time!'])
+    case 'bubbles':
+      return event.diminished ? 'So many bubbles...' : pick(['Pop! Pop! Pop!', 'Bubbles! So shiny!', 'Look, a rainbow in that one!'])
+    case 'buy':
+      return 'Ooh, something new!'
+    case 'equip':
+      return pick(['Do I look cute?', 'I love it!', 'So stylish!'])
     case 'adopt':
       return pick(['Is this my new home?', 'Hello, new family!', 'I love it here already!'])
     case 'switch':
@@ -70,6 +80,14 @@ export function eventLine(event: GameEvent, species: Species, nameOf: (id: strin
           return 'This one needs a friend who’s awake.'
         case 'noOneHungry':
           return 'Nobody is hungry right now.'
+        case 'noToy':
+          return 'We don’t have that toy yet.'
+        case 'notEnoughCoins':
+          return 'We need a few more coins for that.'
+        case 'locked':
+          return 'That one isn’t unlocked yet.'
+        case 'owned':
+          return 'We already have that!'
         case 'cantStudy':
           return 'Let’s finish what we’re doing first.'
         case 'cantWalk':

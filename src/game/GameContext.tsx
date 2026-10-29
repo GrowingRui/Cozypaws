@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, type ReactNode } from 'react'
 import type { FoodId } from './items'
 import { gameReducer } from './logic'
+import type { Accessory } from './types'
 import type { CareAction, CompanionMode, GameState, NewPet, RouteId, StudyConfig, TogetherGame, WalkEventKind } from './state'
 
 type GameApi = {
@@ -27,6 +28,8 @@ type GameApi = {
   skipBreak: () => void
   endStudy: () => void
   closeStudy: () => void
+  buy: (itemId: string, quantity?: number) => void
+  equip: (petId: string, accessory: Accessory | null) => void
 }
 
 const GameContext = createContext<GameApi | null>(null)
@@ -66,6 +69,8 @@ export function GameProvider({ initial, children }: { initial: GameState; childr
       skipBreak: () => dispatch({ type: 'skipBreak', now: Date.now() }),
       endStudy: () => dispatch({ type: 'endStudy', now: Date.now() }),
       closeStudy: () => dispatch({ type: 'closeStudy', now: Date.now() }),
+      buy: (itemId, quantity) => dispatch({ type: 'buy', itemId, quantity, now: Date.now() }),
+      equip: (petId, accessory) => dispatch({ type: 'equip', petId, accessory, now: Date.now() }),
     }),
     [],
   )

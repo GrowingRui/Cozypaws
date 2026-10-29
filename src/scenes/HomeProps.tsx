@@ -179,3 +179,49 @@ export function MiniBowl() {
     </motion.svg>
   )
 }
+
+/** A feather on a stick that swishes above the pet. */
+export function FeatherProp() {
+  return (
+    <motion.div
+      className="pointer-events-none absolute -right-[10%] -top-[8%] z-10 w-[34%] max-w-24"
+      style={{ originX: 1, originY: 1 }}
+      initial={{ opacity: 0, rotate: 20 }}
+      animate={{ opacity: [0, 1, 1, 1, 0], rotate: [20, -25, 15, -30, 10, -10] }}
+      transition={{ duration: 2.1, ease: 'easeInOut' }}
+      aria-hidden="true"
+    >
+      <svg viewBox="0 0 80 80" className="w-full overflow-visible">
+        <path d="M78 78 32 30" stroke="#c99a74" strokeWidth={4} strokeLinecap="round" />
+        <path d="M32 30c-18-4-30-16-28-26 10-2 24 8 28 26Z" fill="#cfc3f0" {...stroke} />
+        <path d="M30 28 10 8M22 22l-8 2M18 16l-6-2" fill="none" stroke="#a796d8" strokeWidth={2} strokeLinecap="round" />
+      </svg>
+    </motion.div>
+  )
+}
+
+const BUBBLES = [
+  { x: '10%', size: 22, delay: 0 },
+  { x: '35%', size: 14, delay: 0.25 },
+  { x: '60%', size: 26, delay: 0.1 },
+  { x: '80%', size: 16, delay: 0.45 },
+  { x: '48%', size: 18, delay: 0.6 },
+]
+
+/** Shiny bubbles drifting up around the pet. */
+export function BubblesProp() {
+  return (
+    <div className="pointer-events-none absolute inset-x-[-15%] bottom-[10%] top-[-20%] z-10" aria-hidden="true">
+      {BUBBLES.map((b, i) => (
+        <motion.span
+          key={i}
+          className="absolute bottom-0 rounded-full border-2 border-[#9fc9e6] bg-[radial-gradient(circle_at_30%_30%,#fffdf9_0_20%,rgb(207_232_246/0.6)_45%,rgb(246_184_198/0.35)_100%)]"
+          style={{ left: b.x, width: b.size, height: b.size }}
+          initial={{ y: 0, opacity: 0, scale: 0.4 }}
+          animate={{ y: [-10, -140, -200], x: [0, i % 2 ? 14 : -14, 0], opacity: [0, 1, 0], scale: [0.4, 1, 1.1] }}
+          transition={{ duration: 2.2, delay: b.delay, ease: 'easeOut' }}
+        />
+      ))}
+    </div>
+  )
+}

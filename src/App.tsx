@@ -1,7 +1,5 @@
 import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { CoinChip } from './components/CoinChip'
-import { Icon } from './components/Icon'
 import { NavBar, type Tab } from './components/NavBar'
 import { GameProvider, useGame } from './game/GameContext'
 import { createGame, MAX_PETS, newPetId, type GameState } from './game/state'
@@ -11,6 +9,7 @@ import { SelectScreen } from './scenes/SelectScreen'
 // Walk and Study load on first visit, keeping the initial download small.
 const WalkScreen = lazy(() => import('./scenes/WalkScreen').then((m) => ({ default: m.WalkScreen })))
 const StudyScreen = lazy(() => import('./scenes/StudyScreen').then((m) => ({ default: m.StudyScreen })))
+const ShopScreen = lazy(() => import('./scenes/ShopScreen').then((m) => ({ default: m.ShopScreen })))
 
 /** Screens cross-fade with opacity only: a transform here would break the fixed nav bar. */
 function Screen({ children }: { children: ReactNode }) {
@@ -22,26 +21,6 @@ function Screen({ children }: { children: ReactNode }) {
 }
 
 const scrollTop = () => window.scrollTo(0, 0)
-
-/** Placeholder for tabs that arrive in a later update. */
-function ComingSoon({ title, text }: { title: string; text: string }) {
-  const { state } = useGame()
-  return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-6xl flex-col gap-4 px-3 pb-28 pt-3 sm:px-6 sm:pt-6">
-      <header className="flex items-center justify-between">
-        <h1 className="text-2xl sm:text-3xl">{title}</h1>
-        <CoinChip coins={state.coins} />
-      </header>
-      <div className="sticker stitch mx-auto mt-8 flex max-w-md flex-col items-center gap-2 p-8 text-center">
-        <span className="grid size-14 place-items-center rounded-full bg-peach-soft text-[#b5602b]">
-          <Icon name="shop" size={30} />
-        </span>
-        <h2 className="text-xl">Opening soon</h2>
-        <p className="text-cocoa-soft">{text}</p>
-      </div>
-    </div>
-  )
-}
 
 /** The household: tabs, plus the selection screen while adopting another pet. */
 function House() {
@@ -89,8 +68,8 @@ function House() {
           <Suspense fallback={<div className="min-h-dvh" />}>
             {view === 'walk' && <WalkScreen onDone={() => changeTab('home')} />}
             {view === 'study' && <StudyScreen onDone={() => changeTab('home')} />}
+            {view === 'shop' && <ShopScreen />}
           </Suspense>
-          {view === 'shop' && <ComingSoon title="Shop" text="Treats, toys and accessories are on their way, along with your bag." />}
         </Screen>
       </AnimatePresence>
 

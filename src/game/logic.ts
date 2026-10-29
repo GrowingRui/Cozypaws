@@ -16,7 +16,8 @@ import {
   type TogetherGame,
   type WalkEventKind,
 } from './state'
-import type { PetMood } from './types'
+import type { Accessory, PetMood } from './types'
+import { buy, equip } from './shop'
 import { advanceStudy, closeStudy, companionGains, endStudy, pauseStudy, resumeStudy, skipBreak, startStudy, studyCompanions } from './study'
 import { dinner, napEffects, napTogether, playTogether, SNUGGLE_ENERGY_BOOST, socialize } from './together'
 import { closeWalk, finishWalk, startWalk, walkEvent } from './walk'
@@ -143,11 +144,17 @@ const CARE: Record<CareAction, { change: Partial<Stats>; xp: number; coins: numb
   pet: { change: { happiness: 8, bond: 4 }, xp: 4, coins: 0, minEnergy: 0 },
   play: { change: { happiness: 14, bond: 3, energy: -12, fullness: -5 }, xp: 10, coins: 2, minEnergy: PLAY_ENERGY },
   fetch: { change: { happiness: 18, bond: 5, energy: -16, fullness: -6 }, xp: 12, coins: 3, minEnergy: FETCH_ENERGY },
+  // Shop toys: gentler on energy, each with its own extra.
+  feather: { change: { happiness: 16, bond: 4, energy: -9, fullness: -4 }, xp: 12, coins: 3, minEnergy: PLAY_ENERGY },
+  bubbles: { change: { happiness: 12, health: 5, bond: 3, energy: -6, fullness: -3 }, xp: 12, coins: 3, minEnergy: 10 },
 }
+/** Toys that must be bought before they can be used. */
+const SHOP_TOYS: CareAction[] = ['feather', 'bubbles']
 
 export function care(state: GameState, action: CareAction, now: number): GameState {
   const pet = activePet(state)
   if (pet.sleeping) return refuse(state, 'asleep')
+  if (SHOP_TOYS.includes(action) && !state.owned.toys.includes(action as 'feather' | 'bubbles')) return refuse(state, 'noToy')
   const def = CARE[action]
   if (pet.stats.energy < def.minEnergy) return refuse(state, 'tooTired')
   const { recent, factor } = repeatFactor(pet.recent[action], now)
@@ -209,6 +216,8 @@ export type GameAction =
   | { type: 'skipBreak'; now: number }
   | { type: 'endStudy'; now: number }
   | { type: 'closeStudy'; now: number }
+  | { type: 'buy'; itemId: string; quantity?: number; now: number }
+  | { type: 'equip'; petId: string; accessory: Accessory | null; now: number }
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   // Bring time-based stats up to date before applying any action.
@@ -257,6 +266,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return endStudy(current, action.now)
     case 'closeStudy':
       return closeStudy(current)
+    case 'buy':
+      return buy(current, action.itemId, action.quantity)
+    case 'equip':
+      return equip(current, action.petId, action.accessory)
   }
 }
 

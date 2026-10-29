@@ -12,19 +12,19 @@ export type Stats = {
 export type StatKey = keyof Stats
 export const STAT_KEYS: StatKey[] = ['fullness', 'happiness', 'energy', 'health', 'bond']
 
-export type CareAction = 'pet' | 'play' | 'fetch'
+export type CareAction = 'pet' | 'play' | 'fetch' | 'feather' | 'bubbles'
 /** Actions tracked for diminishing returns. */
 export type RecentKey = CareAction | 'together'
 export type TogetherGame = 'catch' | 'tug'
 
-export type RefuseReason = 'full' | 'noFood' | 'tooTired' | 'asleep' | 'houseFull' | 'cantWalk' | 'buddyTired' | 'needTwo' | 'noOneHungry' | 'cantStudy'
+export type RefuseReason = 'full' | 'noFood' | 'tooTired' | 'asleep' | 'houseFull' | 'cantWalk' | 'buddyTired' | 'needTwo' | 'noOneHungry' | 'cantStudy' | 'noToy' | 'notEnoughCoins' | 'locked' | 'owned'
 
 /** Something that just happened, for the UI to react to. A new id means "play the reaction again". */
 export type GameEvent = {
   id: number
   /** The pet this happened to. */
   petId: string
-  kind: 'feed' | 'pet' | 'play' | 'fetch' | 'sleep' | 'wake' | 'refuse' | 'adopt' | 'switch' | 'walk' | 'together' | 'napTogether' | 'dinner' | 'study'
+  kind: 'feed' | 'pet' | 'play' | 'fetch' | 'sleep' | 'wake' | 'refuse' | 'adopt' | 'switch' | 'walk' | 'together' | 'napTogether' | 'dinner' | 'study' | 'buy' | 'equip' | 'feather' | 'bubbles'
   food?: FoodId
   reason?: RefuseReason
   deltas: Partial<Stats>
@@ -44,6 +44,9 @@ export type GameEvent = {
   friendship?: number
   /** Study: the phase that just began. */
   studyPhase?: StudyPhase
+  /** Shop: what was bought or worn. */
+  itemId?: string
+  quantity?: number
 }
 
 /** One pet in the household. Each pet has its own needs, progress and sleep. */
@@ -76,6 +79,8 @@ export type GameState = {
   /** The study session in progress (or just finished, while its summary is shown). */
   study: StudySession | null
   studyLog: StudyLog
+  /** Things the household owns. Accessories can be worn by any pet. */
+  owned: { accessories: Accessory[]; toys: ToyId[]; decor: DecorId[] }
   eventSeq: number
   event: GameEvent | null
 }
@@ -111,6 +116,9 @@ export type WalkState = {
   found: WalkFound
   summary?: WalkSummary
 }
+
+export type ToyId = 'feather' | 'bubbles'
+export type DecorId = 'lights' | 'plant'
 
 export type StudyPhase = 'focus' | 'break' | 'done'
 export type CompanionMode = 'nap' | 'hang'
@@ -165,7 +173,7 @@ export function createPet({ id, species, name }: NewPet): PetState {
     level: 1,
     xp: 0,
     sleeping: false,
-    recent: { pet: [], play: [], fetch: [], together: [] },
+    recent: { pet: [], play: [], fetch: [], feather: [], bubbles: [], together: [] },
   }
 }
 
@@ -175,12 +183,13 @@ export function createGame(first: NewPet, now: number): GameState {
     pets: [createPet(first)],
     activeId: first.id,
     coins: 30,
-    inventory: { kibble: 5, cookie: 2, veggies: 2 },
+    inventory: { kibble: 5, cookie: 2, veggies: 2, smoothie: 0, cake: 0 },
     lastTick: now,
     friendships: {},
     walk: null,
     study: null,
     studyLog: { day: '', minutesToday: 0, rewardedToday: 0, streak: 0, lastStudyDay: null, totalMinutes: 0 },
+    owned: { accessories: [], toys: [], decor: [] },
     eventSeq: 0,
     event: null,
   }

@@ -81,7 +81,7 @@ export function StudyScreen({ onDone }: { onDone: () => void }) {
       <main className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
         {session ? (
           <>
-            <StudyRoom compact companions={companions} phase={session.phase === 'break' ? 'break' : session.phase === 'focus' && !session.pausedAt ? 'focus' : 'idle'} />
+            <StudyRoom compact decor={state.owned.decor} companions={companions} phase={session.phase === 'break' ? 'break' : session.phase === 'focus' && !session.pausedAt ? 'focus' : 'idle'} />
             <section aria-label="Study timer" className="sticker stitch flex flex-col gap-4 p-4 sm:p-6">
               {session.phase === 'done' ? (
                 <Summary
@@ -124,7 +124,7 @@ function Setup() {
 
   return (
     <>
-      <StudyRoom companions={preview} phase="idle" compact />
+      <StudyRoom companions={preview} phase="idle" compact decor={state.owned.decor} />
       <section aria-label="Set up a study session" className="sticker stitch flex flex-col gap-4 p-4 sm:p-6">
         <div className="flex flex-wrap gap-2 text-sm font-bold">
           <span className="rounded-full bg-lavender-soft px-3 py-1 text-[#6a55a8]">Today: {log.minutesToday} min focused</span>

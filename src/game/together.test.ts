@@ -91,7 +91,7 @@ describe('dinner', () => {
 
   it('hungriest pets eat first when food runs short', () => {
     let g = patch(patch(trio(), 'a', { fullness: 60 }), 'b', { fullness: 20 })
-    g = { ...g, inventory: { kibble: 1, cookie: 0, veggies: 0 } }
+    g = { ...g, inventory: { kibble: 1, cookie: 0, veggies: 0, smoothie: 0, cake: 0 } }
     g = gameReducer(g, { type: 'dinner', now: T0 })
     expect(g.event!.petIds).toEqual(['b'])
   })

@@ -179,6 +179,7 @@ type AccessoryProps = { kind: Accessory | null | undefined; slot: 'head' | 'neck
 export function AccessoryLayer({ kind, slot, anchors }: AccessoryProps) {
   if (!kind) return null
   if (slot === 'neck' && kind === 'bandana') return <Bandana at={anchors.neck} />
+  if (slot === 'neck' && kind === 'friendBandana') return <Bandana at={anchors.neck} fill="#f6a9bb" hearts />
   if (slot === 'head' && kind === 'bow') return <Bow at={anchors.bow} />
   if (slot === 'head' && kind === 'crown') return <Crown {...anchors.crown} />
   return null
@@ -194,17 +195,29 @@ function Bow({ at: [x, y] }: { at: Point }) {
   )
 }
 
-function Bandana({ at: [x, y] }: { at: Point }) {
+function Bandana({ at: [x, y], fill = '#9fd8bb', hearts = false }: { at: Point; fill?: string; hearts?: boolean }) {
   return (
     <g>
       <path
         d={`M${x - 30} ${y - 4} Q${x} ${y + 8} ${x + 30} ${y - 4} L${x + 4} ${y + 24} Q${x} ${y + 27} ${x - 4} ${y + 24}Z`}
-        fill="#9fd8bb"
+        fill={fill}
         stroke={INK}
         strokeWidth={2.8}
         strokeLinejoin="round"
       />
-      {[
+      {hearts &&
+        [
+          [-12, 3],
+          [10, 3],
+          [0, 13],
+        ].map(([dx, dy], i) => (
+          <path
+            key={`h${i}`}
+            d={`M${x + dx!} ${y + dy! + 3}c-3-2-4.5-3.5-4.5-5a2.2 2.2 0 0 1 4.5-1 2.2 2.2 0 0 1 4.5 1c0 1.5-1.5 3-4.5 5Z`}
+            fill="#fffdf9"
+          />
+        ))}
+      {!hearts && [
         [-14, 3],
         [0, 8],
         [12, 3],
