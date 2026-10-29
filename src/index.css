@@ -1,0 +1,109 @@
+@import 'tailwindcss';
+
+/*
+ * CozyPaws design tokens.
+ * Palette: cream / warm white / blush / lavender / mint / peach from the brief,
+ * plus cocoa for text and berry for focus + primary emphasis.
+ * Spacing rhythm: 4 · 8 · 12 · 16 · 24 · 32 · 48 px (Tailwind 1, 2, 3, 4, 6, 8, 12) only.
+ */
+@theme {
+  --color-cream: #fff6ea;
+  --color-milk: #fffdf9;
+  --color-blush: #f6b8c6;
+  --color-blush-soft: #fbdbe2;
+  --color-lavender: #cfc3f0;
+  --color-lavender-soft: #e8e1f8;
+  --color-mint: #bfe6d1;
+  --color-mint-soft: #e0f3e8;
+  --color-peach: #ffcfae;
+  --color-peach-soft: #ffe6d4;
+  --color-cocoa: #4a3434;
+  --color-cocoa-soft: #7a5f5c;
+  --color-berry: #b0436c;
+  --color-berry-deep: #8e3156;
+
+  --font-display: 'Mochiy Pop One', 'M PLUS Rounded 1c', system-ui, sans-serif;
+  --font-body: 'M PLUS Rounded 1c', system-ui, sans-serif;
+
+  --radius-chip: 0.875rem;
+  --radius-sticker: 1.375rem;
+  --radius-stage: 2.25rem;
+
+  /* Layered, cocoa/berry-tinted elevation: base → raised → floating. */
+  --shadow-base: 0 1px 0 rgb(255 255 255 / 0.9) inset, 0 1px 2px rgb(74 52 52 / 0.06), 0 2px 6px rgb(176 67 108 / 0.05);
+  --shadow-raised: 0 1px 0 rgb(255 255 255 / 0.9) inset, 0 2px 4px rgb(74 52 52 / 0.06), 0 8px 18px -6px rgb(176 67 108 / 0.16);
+  --shadow-float: 0 2px 6px rgb(74 52 52 / 0.07), 0 14px 32px -10px rgb(176 67 108 / 0.24), 0 28px 60px -24px rgb(74 52 52 / 0.18);
+
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html {
+    background-color: var(--color-cream);
+    color: var(--color-cocoa);
+    font-family: var(--font-body);
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    min-height: 100dvh;
+    line-height: 1.7;
+    overflow-x: hidden;
+    /* Layered radial washes for a warm, sunlit room. */
+    background:
+      radial-gradient(60rem 40rem at 12% -10%, rgb(251 219 226 / 0.85), transparent 60%),
+      radial-gradient(50rem 36rem at 105% 15%, rgb(232 225 248 / 0.9), transparent 55%),
+      radial-gradient(44rem 30rem at 50% 115%, rgb(224 243 232 / 0.9), transparent 60%),
+      var(--color-cream);
+  }
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-berry);
+    outline-offset: 3px;
+  }
+  button {
+    cursor: pointer;
+  }
+}
+
+@layer components {
+  /* Felt-sticker surface with a stitched inner edge. */
+  .sticker {
+    position: relative;
+    background: var(--color-milk);
+    border-radius: var(--radius-sticker);
+    box-shadow: var(--shadow-raised);
+  }
+  .stitch::after {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border: 1.5px dashed rgb(74 52 52 / 0.16);
+    border-radius: calc(var(--radius-sticker) - 5px);
+    pointer-events: none;
+  }
+  /* Fine paper grain over the whole app. */
+  .grain::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    opacity: 0.22;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.29 0 0 0 0 0.2 0 0 0 0 0.2 0 0 0 0.35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
