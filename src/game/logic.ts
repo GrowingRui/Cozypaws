@@ -1,3 +1,4 @@
+import { addXp, applyStats, clamp, diff, emit, refuse, replacePet } from './core'
 import { FOODS, type FoodId } from './items'
 import {
   activePet,
@@ -9,16 +10,19 @@ import {
   type GameState,
   type NewPet,
   type PetState,
+  type RouteId,
   type Stats,
+  type WalkEventKind,
 } from './state'
 import type { PetMood } from './types'
+import { closeWalk, finishWalk, startWalk, walkEvent } from './walk'
+
+export { clamp, xpToNext, levelReward } from './core'
 
 /**
  * Pure game rules. Every function takes the current state (and the time) and returns a new state,
  * so the rules can be unit-tested and later run on a server without changes.
  */
-
-export const clamp = (v: number) => Math.max(0, Math.min(100, v))
 
 // ---- Time-based change (per minute) -------------------------------------------------------
 
@@ -75,57 +79,7 @@ export function tick(state: GameState, now: number): GameState {
   return next
 }
 
-// ---- Progression --------------------------------------------------------------------------
-
-export const xpToNext = (level: number) => 40 + (level - 1) * 20
-export const levelReward = (level: number) => 20 + level * 5
-
-/** Adds xp to a pet; level-up coin rewards go to the shared purse. */
-function addXp(pet: PetState, xp: number): { pet: PetState; levelUp?: number; bonus: number } {
-  let { level } = pet
-  let total = pet.xp + xp
-  let bonus = 0
-  let levelUp: number | undefined
-  while (total >= xpToNext(level)) {
-    total -= xpToNext(level)
-    level += 1
-    bonus += levelReward(level)
-    levelUp = level
-  }
-  return { pet: { ...pet, level, xp: total }, levelUp, bonus }
-}
-
 // ---- Helpers ------------------------------------------------------------------------------
-
-function applyStats(stats: Stats, change: Partial<Stats>): Stats {
-  const next = { ...stats }
-  for (const k of STAT_KEYS) if (change[k] !== undefined) next[k] = clamp(next[k] + change[k]!)
-  return next
-}
-
-function diff(before: Stats, after: Stats): Partial<Stats> {
-  const out: Partial<Stats> = {}
-  for (const k of STAT_KEYS) {
-    const d = Math.round(after[k]) - Math.round(before[k])
-    if (d !== 0) out[k] = d
-  }
-  return out
-}
-
-function replacePet(state: GameState, pet: PetState): GameState {
-  return { ...state, pets: state.pets.map((p) => (p.id === pet.id ? pet : p)) }
-}
-
-type EventInput = Omit<GameEvent, 'id' | 'petId' | 'deltas' | 'xp' | 'coins'> & Partial<Pick<GameEvent, 'deltas' | 'xp' | 'coins'>>
-
-function emit(state: GameState, petId: string, event: EventInput): GameState {
-  const id = state.eventSeq + 1
-  return { ...state, eventSeq: id, event: { deltas: {}, xp: 0, coins: 0, ...event, id, petId } }
-}
-
-function refuse(state: GameState, reason: GameEvent['reason']): GameState {
-  return emit(state, state.activeId, { kind: 'refuse', reason })
-}
 
 const RECENT_WINDOW_MS = 60_000
 /** Gain multiplier for the nth repeat of the same action within a minute. */
@@ -238,6 +192,10 @@ export type GameAction =
   | { type: 'wake'; now: number }
   | { type: 'adopt'; pet: NewPet; now: number }
   | { type: 'switch'; petId: string; now: number }
+  | { type: 'startWalk'; petIds: string[]; route: RouteId; now: number }
+  | { type: 'walkEvent'; kind: WalkEventKind; food?: FoodId; now: number }
+  | { type: 'finishWalk'; now: number }
+  | { type: 'closeWalk'; now: number }
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   // Bring time-based stats up to date before applying any action.
@@ -257,6 +215,14 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return adopt(current, action.pet)
     case 'switch':
       return switchPet(current, action.petId)
+    case 'startWalk':
+      return startWalk(current, action.petIds, action.route, action.now)
+    case 'walkEvent':
+      return walkEvent(current, action.kind, action.food)
+    case 'finishWalk':
+      return finishWalk(current, action.now)
+    case 'closeWalk':
+      return closeWalk(current)
   }
 }
 

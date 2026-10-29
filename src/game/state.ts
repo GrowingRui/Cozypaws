@@ -14,14 +14,14 @@ export const STAT_KEYS: StatKey[] = ['fullness', 'happiness', 'energy', 'health'
 
 export type CareAction = 'pet' | 'play' | 'fetch'
 
-export type RefuseReason = 'full' | 'noFood' | 'tooTired' | 'asleep' | 'houseFull'
+export type RefuseReason = 'full' | 'noFood' | 'tooTired' | 'asleep' | 'houseFull' | 'cantWalk'
 
 /** Something that just happened, for the UI to react to. A new id means "play the reaction again". */
 export type GameEvent = {
   id: number
   /** The pet this happened to. */
   petId: string
-  kind: 'feed' | 'pet' | 'play' | 'fetch' | 'sleep' | 'wake' | 'refuse' | 'adopt' | 'switch'
+  kind: 'feed' | 'pet' | 'play' | 'fetch' | 'sleep' | 'wake' | 'refuse' | 'adopt' | 'switch' | 'walk'
   food?: FoodId
   reason?: RefuseReason
   deltas: Partial<Stats>
@@ -57,9 +57,47 @@ export type GameState = {
   inventory: Record<FoodId, number>
   /** Timestamp (ms) of the last time-based update. */
   lastTick: number
+  /** Friendship between each pair of pets, 0–100, keyed by pairKey(a, b). */
+  friendships: Record<string, number>
+  /** The walk in progress (or just finished, while its results are shown). */
+  walk: WalkState | null
   eventSeq: number
   event: GameEvent | null
 }
+
+export type RouteId = 'stroll' | 'meadow'
+
+export type WalkEventKind = 'acorn' | 'snack' | 'friend' | 'butterfly' | 'bench' | 'flowers' | 'puddle'
+
+/** What a walk has collected so far; applied to the pets when the walk ends. */
+export type WalkFound = {
+  coins: number
+  items: Partial<Record<FoodId, number>>
+  /** Extra stat changes for every walker, on top of the base walk reward. */
+  bonus: Partial<Stats>
+  /** Extra friendship for every pair of walkers. */
+  friendship: number
+  events: WalkEventKind[]
+}
+
+export type WalkSummary = {
+  completed: number
+  perPet: { petId: string; deltas: Partial<Stats>; levelUp?: number }[]
+  coins: number
+  xp: number
+  items: Partial<Record<FoodId, number>>
+  friendship: { a: string; b: string; gain: number }[]
+}
+
+export type WalkState = {
+  petIds: string[]
+  route: RouteId
+  startedAt: number
+  found: WalkFound
+  summary?: WalkSummary
+}
+
+export const pairKey = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`)
 
 export const MAX_PETS = 4
 
@@ -87,6 +125,8 @@ export function createGame(first: NewPet, now: number): GameState {
     coins: 30,
     inventory: { kibble: 5, cookie: 2, veggies: 2 },
     lastTick: now,
+    friendships: {},
+    walk: null,
     eventSeq: 0,
     event: null,
   }

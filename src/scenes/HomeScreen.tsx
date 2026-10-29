@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
 import { AnimatePresence, LayoutGroup, motion, useAnimate } from 'motion/react'
 import { ActionButton } from '../components/ActionButton'
+import { CoinChip } from '../components/CoinChip'
 import { FoodTray, STAT_LABEL } from '../components/FoodTray'
 import { Icon, type IconName } from '../components/Icon'
-import { NavBar, type Tab } from '../components/NavBar'
 import { Burst, type BurstKind } from '../components/Particles'
 import { PetSwitcher } from '../components/PetSwitcher'
 import { StatBar } from '../components/StatBar'
@@ -56,7 +56,6 @@ export function HomeScreen({ onAdopt, welcome = false }: HomeScreenProps) {
   const others = state.pets.filter((p) => p.id !== pet.id)
   const info = SPECIES[pet.species]
 
-  const [tab, setTab] = useState<Tab>('home')
   const [trayOpen, setTrayOpen] = useState(false)
   const [reaction, setReaction] = useState<Reaction | null>(null)
   const [prop, setProp] = useState<PropShown | null>(null)
@@ -194,16 +193,7 @@ export function HomeScreen({ onAdopt, welcome = false }: HomeScreenProps) {
     <div className="mx-auto flex min-h-dvh w-full max-w-6xl flex-col gap-4 px-3 pb-28 pt-3 sm:px-6 sm:pt-6 lg:pb-32">
       <header className="flex items-center justify-between gap-3">
         <PetSwitcher pets={state.pets} activeId={pet.id} onSwitch={switchPet} onAdopt={onAdopt} canAdopt={state.pets.length < MAX_PETS} />
-        <motion.div
-          key={state.coins}
-          className="sticker flex shrink-0 items-center gap-1.5 px-3 py-2 font-bold text-[#b5602b]"
-          aria-label={`${state.coins} coins`}
-          animate={{ scale: [1, 1.15, 1] }}
-          transition={{ duration: 0.35 }}
-        >
-          <Icon name="coin" size={20} />
-          <span className="tabular-nums text-cocoa">{state.coins}</span>
-        </motion.div>
+        <CoinChip coins={state.coins} />
       </header>
 
       <main className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
@@ -380,9 +370,6 @@ export function HomeScreen({ onAdopt, welcome = false }: HomeScreenProps) {
         </aside>
       </main>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-        <NavBar active={tab} onChange={setTab} />
-      </div>
     </div>
   )
 }
