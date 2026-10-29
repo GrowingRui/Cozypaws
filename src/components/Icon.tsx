@@ -21,8 +21,23 @@ export type IconName =
   | 'leaf'
   | 'drumstick'
   | 'sparkle'
+  | 'dice'
+  | 'chevronLeft'
+  | 'chevronRight'
 
 const paths: Record<IconName, React.ReactNode> = {
+  dice: (
+    <>
+      <rect x="4" y="4" width="16" height="16" rx="4.5" fill="currentColor" fillOpacity=".18" />
+      <rect x="4" y="4" width="16" height="16" rx="4.5" />
+      <circle cx="9" cy="9" r="1.1" fill="currentColor" />
+      <circle cx="15" cy="15" r="1.1" fill="currentColor" />
+      <circle cx="15" cy="9" r="1.1" fill="currentColor" />
+      <circle cx="9" cy="15" r="1.1" fill="currentColor" />
+    </>
+  ),
+  chevronLeft: <path d="M14.5 5.5 8 12l6.5 6.5" strokeWidth={2.6} />,
+  chevronRight: <path d="M9.5 5.5 16 12l-6.5 6.5" strokeWidth={2.6} />,
   bowl: (
     <>
       <path d="M3.5 11.5h17a8.5 8.5 0 0 1-17 0Z" fill="currentColor" fillOpacity=".18" />
