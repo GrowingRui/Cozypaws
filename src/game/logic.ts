@@ -1,10 +1,9 @@
-import { addXp, applyStats, clamp, diff, emit, refuse, replacePet } from './core'
+import { addXp, applyStats, clamp, diff, emit, refuse, repeatFactor, replacePet, scaleGains } from './core'
 import { FOODS, type FoodId } from './items'
 import {
   activePet,
   createPet,
   MAX_PETS,
-  STAT_KEYS,
   type CareAction,
   type GameEvent,
   type GameState,
@@ -12,9 +11,11 @@ import {
   type PetState,
   type RouteId,
   type Stats,
+  type TogetherGame,
   type WalkEventKind,
 } from './state'
 import type { PetMood } from './types'
+import { dinner, napEffects, napTogether, playTogether, SNUGGLE_ENERGY_BOOST, socialize } from './together'
 import { closeWalk, finishWalk, startWalk, walkEvent } from './walk'
 
 export { clamp, xpToNext, levelReward } from './core'
@@ -43,9 +44,10 @@ function decayTo(value: number, ratePerMin: number, minutes: number, floor: numb
   return Math.min(value, Math.max(floor, next))
 }
 
-function tickPet(pet: PetState, minutes: number): PetState {
+function tickPet(pet: PetState, minutes: number, snuggling = false): PetState {
   const s = pet.stats
   const r = pet.sleeping ? RATES.asleep : RATES.awake
+  const energyRate = snuggling ? r.energy * SNUGGLE_ENERGY_BOOST : r.energy
 
   // Health slips only when needs are badly neglected, and recovers with good care or rest.
   let healthRate = 0
@@ -59,7 +61,7 @@ function tickPet(pet: PetState, minutes: number): PetState {
       ...s,
       fullness: decayTo(s.fullness, r.fullness, minutes, DECAY_FLOOR),
       happiness: decayTo(s.happiness, r.happiness, minutes, DECAY_FLOOR),
-      energy: decayTo(s.energy, r.energy, minutes, DECAY_FLOOR),
+      energy: decayTo(s.energy, energyRate, minutes, DECAY_FLOOR),
       health: decayTo(s.health, healthRate, minutes, HEALTH_FLOOR),
     },
   }
@@ -70,7 +72,9 @@ export function tick(state: GameState, now: number): GameState {
   const elapsed = Math.min(Math.max(0, now - state.lastTick), MAX_ELAPSED_MS)
   if (elapsed < 250) return state
   const minutes = elapsed / 60000
-  let next: GameState = { ...state, lastTick: now, pets: state.pets.map((p) => tickPet(p, minutes)) }
+  // Pets napping alongside a pal rest faster, and napping together grows friendship.
+  const nap = napEffects(state, minutes)
+  let next: GameState = { ...nap.next, lastTick: now, pets: state.pets.map((p) => tickPet(p, minutes, nap.energyBoost.has(p.id))) }
 
   // Sleeping pets wake up on their own once fully rested.
   for (const pet of next.pets) {
@@ -80,21 +84,6 @@ export function tick(state: GameState, now: number): GameState {
 }
 
 // ---- Helpers ------------------------------------------------------------------------------
-
-const RECENT_WINDOW_MS = 60_000
-/** Gain multiplier for the nth repeat of the same action within a minute. */
-const REPEAT_FACTORS = [1, 1, 0.7, 0.5, 0.3]
-const MIN_FACTOR = 0.2
-
-/** Scales positive gains by the repeat factor; costs (negative values) always apply in full. */
-function scaleGains(change: Partial<Stats>, factor: number): Partial<Stats> {
-  const out: Partial<Stats> = {}
-  for (const k of STAT_KEYS) {
-    const v = change[k]
-    if (v !== undefined) out[k] = v > 0 ? Math.round(v * factor) : v
-  }
-  return out
-}
 
 /** Applies a stat change + rewards to a pet and emits the matching event. */
 function resolve(
@@ -146,8 +135,7 @@ export function care(state: GameState, action: CareAction, now: number): GameSta
   if (pet.sleeping) return refuse(state, 'asleep')
   const def = CARE[action]
   if (pet.stats.energy < def.minEnergy) return refuse(state, 'tooTired')
-  const recent = pet.recent[action].filter((t) => now - t < RECENT_WINDOW_MS)
-  const factor = REPEAT_FACTORS[recent.length] ?? MIN_FACTOR
+  const { recent, factor } = repeatFactor(pet.recent[action], now)
   const withRecent = { ...pet, recent: { ...pet.recent, [action]: [...recent, now] } }
   return resolve(state, withRecent, action, scaleGains(def.change, factor), Math.round(def.xp * factor), factor < 1 ? 0 : def.coins, {
     diminished: factor < 1,
@@ -196,6 +184,10 @@ export type GameAction =
   | { type: 'walkEvent'; kind: WalkEventKind; food?: FoodId; now: number }
   | { type: 'finishWalk'; now: number }
   | { type: 'closeWalk'; now: number }
+  | { type: 'playTogether'; buddyId: string; game: TogetherGame; now: number }
+  | { type: 'napTogether'; petIds: string[]; now: number }
+  | { type: 'dinner'; now: number }
+  | { type: 'socialize'; a: string; b: string; now: number }
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   // Bring time-based stats up to date before applying any action.
@@ -223,6 +215,14 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return finishWalk(current, action.now)
     case 'closeWalk':
       return closeWalk(current)
+    case 'playTogether':
+      return playTogether(current, action.buddyId, action.game, action.now)
+    case 'napTogether':
+      return napTogether(current, action.petIds)
+    case 'dinner':
+      return dinner(current)
+    case 'socialize':
+      return socialize(current, action.a, action.b)
   }
 }
 

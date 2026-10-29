@@ -64,3 +64,24 @@ export function emit(state: GameState, petId: string, event: EventInput): GameSt
 export function refuse(state: GameState, reason: GameEvent['reason']): GameState {
   return emit(state, state.activeId, { kind: 'refuse', reason })
 }
+
+const RECENT_WINDOW_MS = 60_000
+/** Gain multiplier for the nth repeat of the same action within a minute. */
+const REPEAT_FACTORS = [1, 1, 0.7, 0.5, 0.3]
+const MIN_FACTOR = 0.2
+
+/** Drops old timestamps and returns how much a repeated action should still give. */
+export function repeatFactor(times: number[], now: number): { recent: number[]; factor: number } {
+  const recent = times.filter((t) => now - t < RECENT_WINDOW_MS)
+  return { recent, factor: REPEAT_FACTORS[recent.length] ?? MIN_FACTOR }
+}
+
+/** Scales positive gains; costs (negative values) always apply in full. */
+export function scaleGains(change: Partial<Stats>, factor: number): Partial<Stats> {
+  const out: Partial<Stats> = {}
+  for (const k of STAT_KEYS) {
+    const v = change[k]
+    if (v !== undefined) out[k] = v > 0 ? Math.round(v * factor) : v
+  }
+  return out
+}

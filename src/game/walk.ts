@@ -126,6 +126,4 @@ export function closeWalk(state: GameState): GameState {
   return state.walk?.summary ? { ...state, walk: null } : state
 }
 
-export function friendshipOf(state: GameState, a: string, b: string): number {
-  return state.friendships[pairKey(a, b)] ?? 0
-}
+export { friendshipOf } from './together'

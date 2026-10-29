@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, type ReactNode } from 'react'
 import type { FoodId } from './items'
 import { gameReducer } from './logic'
-import type { CareAction, GameState, NewPet, RouteId, WalkEventKind } from './state'
+import type { CareAction, GameState, NewPet, RouteId, TogetherGame, WalkEventKind } from './state'
 
 type GameApi = {
   state: GameState
@@ -15,6 +15,10 @@ type GameApi = {
   walkEvent: (kind: WalkEventKind, food?: FoodId) => void
   finishWalk: () => void
   closeWalk: () => void
+  playTogether: (buddyId: string, game: TogetherGame) => void
+  napTogether: (petIds: string[]) => void
+  dinner: () => void
+  socialize: (a: string, b: string) => void
 }
 
 const GameContext = createContext<GameApi | null>(null)
@@ -30,9 +34,9 @@ export function GameProvider({ initial, children }: { initial: GameState; childr
     return () => clearInterval(id)
   }, [])
 
-  const api = useMemo<GameApi>(
+  // Actions never change identity, so effects and timers that use them don't restart on every tick.
+  const actions = useMemo<Omit<GameApi, 'state'>>(
     () => ({
-      state,
       feed: (food) => dispatch({ type: 'feed', food, now: Date.now() }),
       care: (action) => dispatch({ type: 'care', action, now: Date.now() }),
       sleep: () => dispatch({ type: 'sleep', now: Date.now() }),
@@ -43,9 +47,14 @@ export function GameProvider({ initial, children }: { initial: GameState; childr
       walkEvent: (kind, food) => dispatch({ type: 'walkEvent', kind, food, now: Date.now() }),
       finishWalk: () => dispatch({ type: 'finishWalk', now: Date.now() }),
       closeWalk: () => dispatch({ type: 'closeWalk', now: Date.now() }),
+      playTogether: (buddyId, game) => dispatch({ type: 'playTogether', buddyId, game, now: Date.now() }),
+      napTogether: (petIds) => dispatch({ type: 'napTogether', petIds, now: Date.now() }),
+      dinner: () => dispatch({ type: 'dinner', now: Date.now() }),
+      socialize: (a, b) => dispatch({ type: 'socialize', a, b, now: Date.now() }),
     }),
-    [state],
+    [],
   )
+  const api = useMemo<GameApi>(() => ({ state, ...actions }), [state, actions])
 
   return <GameContext.Provider value={api}>{children}</GameContext.Provider>
 }

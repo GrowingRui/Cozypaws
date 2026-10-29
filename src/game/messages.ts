@@ -20,7 +20,8 @@ const CONTENT: Record<Species, string[]> = {
   horse: ['I could go for a walk.', 'What a lovely day.', 'Do you hear birds outside?'],
 }
 
-export function eventLine(event: GameEvent, species: Species): string {
+export function eventLine(event: GameEvent, species: Species, nameOf: (id: string) => string = () => 'friend'): string {
+  const buddy = event.buddyId ? nameOf(event.buddyId) : 'friend'
   if (event.levelUp) return `Level ${event.levelUp}! Look at me grow!`
   switch (event.kind) {
     case 'feed':
@@ -36,6 +37,15 @@ export function eventLine(event: GameEvent, species: Species): string {
       return pick(['Is this my new home?', 'Hello, new family!', 'I love it here already!'])
     case 'switch':
       return pick(['My turn? Yay!', 'You picked me!', 'Hi again!'])
+    case 'together':
+      if (event.diminished) return 'Phew! Let’s catch our breath.'
+      return event.game === 'tug'
+        ? pick(['Pull, pull, pull!', `I’m winning, ${buddy}!`, 'Tug-of-war is the best!'])
+        : pick([`Catch, ${buddy}!`, `Your turn, ${buddy}!`, 'Nice catch!'])
+    case 'napTogether':
+      return pick(['Snuggle time...', 'Goodnight, everyone.', 'Cosy pile!'])
+    case 'dinner':
+      return pick(['Dinner time! Yum!', 'Everyone eat up!', 'Best dinner party ever.'])
     case 'walk':
       return pick(['What a lovely walk!', 'Home sweet home!', 'Can we go again tomorrow?'])
     case 'sleep':
@@ -48,6 +58,12 @@ export function eventLine(event: GameEvent, species: Species): string {
           return pick(['I’m too full!', 'Maybe later, my tummy is full.'])
         case 'noFood':
           return 'That one’s all gone.'
+        case 'buddyTired':
+          return `${buddy} is too sleepy to play right now.`
+        case 'needTwo':
+          return 'This one needs a friend who’s awake.'
+        case 'noOneHungry':
+          return 'Nobody is hungry right now.'
         case 'cantWalk':
           return 'Someone is too sleepy for a walk.'
         case 'houseFull':
@@ -97,4 +113,10 @@ export const WALK_CHATTER = ['What a lovely day!', 'Smell that? Flowers!', 'Whee
 
 export function walkChatter(): string {
   return pick(WALK_CHATTER)
+}
+
+/** What one pet says to another when they meet up on their own. */
+export function greetingLine(name: string, bestFriends: boolean): string {
+  if (bestFriends) return pick([`You’re my best friend, ${name}!`, `${name}! There you are!`])
+  return pick([`Hi, ${name}!`, `Wanna play, ${name}?`, `Nice to see you, ${name}.`])
 }

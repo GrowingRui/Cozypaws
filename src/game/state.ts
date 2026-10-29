@@ -13,15 +13,18 @@ export type StatKey = keyof Stats
 export const STAT_KEYS: StatKey[] = ['fullness', 'happiness', 'energy', 'health', 'bond']
 
 export type CareAction = 'pet' | 'play' | 'fetch'
+/** Actions tracked for diminishing returns. */
+export type RecentKey = CareAction | 'together'
+export type TogetherGame = 'catch' | 'tug'
 
-export type RefuseReason = 'full' | 'noFood' | 'tooTired' | 'asleep' | 'houseFull' | 'cantWalk'
+export type RefuseReason = 'full' | 'noFood' | 'tooTired' | 'asleep' | 'houseFull' | 'cantWalk' | 'buddyTired' | 'needTwo' | 'noOneHungry'
 
 /** Something that just happened, for the UI to react to. A new id means "play the reaction again". */
 export type GameEvent = {
   id: number
   /** The pet this happened to. */
   petId: string
-  kind: 'feed' | 'pet' | 'play' | 'fetch' | 'sleep' | 'wake' | 'refuse' | 'adopt' | 'switch' | 'walk'
+  kind: 'feed' | 'pet' | 'play' | 'fetch' | 'sleep' | 'wake' | 'refuse' | 'adopt' | 'switch' | 'walk' | 'together' | 'napTogether' | 'dinner'
   food?: FoodId
   reason?: RefuseReason
   deltas: Partial<Stats>
@@ -32,6 +35,13 @@ export type GameEvent = {
   diminished?: boolean
   /** For wake: whether the pet slept until fully rested. */
   rested?: boolean
+  /** Together play: who joined and which game. */
+  buddyId?: string
+  game?: TogetherGame
+  /** Group activities (nap, dinner): everyone who took part. */
+  petIds?: string[]
+  /** Friendship gained by each pair in this event. */
+  friendship?: number
 }
 
 /** One pet in the household. Each pet has its own needs, progress and sleep. */
@@ -45,7 +55,7 @@ export type PetState = {
   xp: number
   sleeping: boolean
   /** Recent care timestamps, used for diminishing returns on spammed actions. */
-  recent: Record<CareAction, number[]>
+  recent: Record<RecentKey, number[]>
 }
 
 /** The whole household: pets plus shared coins and food. */
@@ -113,7 +123,7 @@ export function createPet({ id, species, name }: NewPet): PetState {
     level: 1,
     xp: 0,
     sleeping: false,
-    recent: { pet: [], play: [], fetch: [] },
+    recent: { pet: [], play: [], fetch: [], together: [] },
   }
 }
 

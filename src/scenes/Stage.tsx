@@ -84,7 +84,6 @@ export function Stage({ children, label, night = false, scenery }: StageProps) {
         />
         {/* Rug */}
         <div className="absolute bottom-[8%] left-1/2 h-[18%] w-[62%] max-w-[26rem] -translate-x-1/2 rounded-[50%] bg-mint shadow-[inset_0_0_0_6px_rgb(255_255_255/0.55)]" />
-        {scenery}
         {/* Night: the room dims and a warm lamp glow pools around the pet */}
         <motion.div
           className="pointer-events-none absolute inset-0"
@@ -97,6 +96,8 @@ export function Stage({ children, label, night = false, scenery }: StageProps) {
           transition={{ duration: 1.2 }}
         />
         {/* Pet slot */}
+        {/* Pets stay bright above the night dimming, so they remain the focus */}
+        {scenery}
         {/* Only the pet itself takes clicks, so pets elsewhere in the room stay tappable */}
         <div className="pointer-events-none absolute inset-x-0 bottom-[12%] flex justify-center [&>*]:pointer-events-auto">{children}</div>
       </div>

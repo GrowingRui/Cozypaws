@@ -118,3 +118,64 @@ export function PatProp() {
     </motion.div>
   )
 }
+
+/** A ball tossed back and forth between two pets standing side by side. */
+export function CatchProp() {
+  return (
+    <motion.div
+      className="pointer-events-none absolute inset-x-0 top-[22%] z-10"
+      initial={{ x: '18%', opacity: 0 }}
+      animate={{ x: ['18%', '68%', '18%', '68%'], opacity: [0, 1, 1, 1, 0] }}
+      transition={{ duration: 2.3, ease: 'easeInOut', opacity: { duration: 2.3, times: [0, 0.05, 0.5, 0.9, 1] } }}
+      aria-hidden="true"
+    >
+      <motion.div
+        className="w-[12%] max-w-11"
+        animate={{ y: [0, -80, 0, -80, 0, -80, 0], rotate: [0, 180, 360, 540, 720, 900, 1080] }}
+        transition={{ duration: 2.3, ease: 'easeInOut' }}
+      >
+        <svg viewBox="0 0 40 40" className="w-full overflow-visible">
+          <circle cx={20} cy={20} r={16} fill="#bfe6d1" {...stroke} />
+          <path d="M6 14c8 4 20 4 28 0M6 26c8-4 20-4 28 0" fill="none" stroke="#f39bb0" strokeWidth={3.5} strokeLinecap="round" />
+        </svg>
+      </motion.div>
+    </motion.div>
+  )
+}
+
+/** A yarn rope stretched between two pets for tug-of-war. */
+export function TugProp() {
+  return (
+    <motion.div
+      className="pointer-events-none absolute inset-x-[28%] top-[58%] z-10 h-3"
+      initial={{ opacity: 0, scaleX: 0.4 }}
+      animate={{ opacity: [0, 1, 1, 0], scaleX: 1 }}
+      transition={{ duration: 2.4, times: [0, 0.1, 0.85, 1] }}
+      aria-hidden="true"
+    >
+      <div className="h-full rounded-full border-2 border-cocoa/70 bg-[repeating-linear-gradient(110deg,#cfc3f0_0_8px,#a796d8_8px_12px)]" />
+      <span className="absolute left-1/2 top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-cocoa/70 bg-blush" />
+    </motion.div>
+  )
+}
+
+/** Tiny bowl shown in front of a pet in the room during dinner. */
+export function MiniBowl() {
+  return (
+    <motion.svg
+      viewBox="0 0 100 50"
+      className="pointer-events-none absolute -bottom-1 left-1/2 w-[70%] -translate-x-1/2 overflow-visible"
+      initial={{ opacity: 0, scale: 0.4 }}
+      animate={{ opacity: [0, 1, 1, 0], scale: [0.4, 1, 1, 0.9] }}
+      transition={{ duration: 2.3, times: [0, 0.12, 0.85, 1] }}
+      aria-hidden="true"
+    >
+      <motion.g style={{ originX: 0.5, originY: 1 }} animate={{ scaleY: [1, 1, 0.2] }} transition={{ duration: 1.9, times: [0, 0.2, 1] }}>
+        {[30, 44, 58, 70].map((x, i) => (
+          <ellipse key={x} cx={x} cy={i % 2 ? 22 : 26} rx={8} ry={6} fill={i % 2 ? '#d99e6a' : '#c98a55'} {...stroke} strokeWidth={2} />
+        ))}
+      </motion.g>
+      <path d="M8 26h84a42 22 0 0 1-84 0Z" fill="#f6b8c6" {...stroke} />
+    </motion.svg>
+  )
+}
