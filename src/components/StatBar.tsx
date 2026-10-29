@@ -8,9 +8,11 @@ type StatBarProps = {
   tone: Tone
   /** 0–100. Higher is always better. */
   value: number
+  /** Latest change; a new id replays the floating "+n" label. */
+  delta?: { value: number; id: number }
 }
 
-export function StatBar({ label, icon, tone, value }: StatBarProps) {
+export function StatBar({ label, icon, tone, value, delta }: StatBarProps) {
   const t = toneClasses[tone]
   const v = Math.max(0, Math.min(100, Math.round(value)))
   const low = v < 25
@@ -27,7 +29,22 @@ export function StatBar({ label, icon, tone, value }: StatBarProps) {
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline justify-between text-[0.8125rem] leading-5">
           <span className="font-bold">{label}</span>
-          <span className="tabular-nums text-cocoa-soft">{v}</span>
+          <span className="relative tabular-nums text-cocoa-soft">
+            {delta && (
+              <motion.span
+                key={delta.id}
+                aria-hidden="true"
+                className={`absolute right-full mr-1.5 font-bold ${delta.value > 0 ? 'text-[#2f7a57]' : 'text-berry'}`}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: [0, 1, 1, 0], y: [6, 0, 0, -8] }}
+                transition={{ duration: 1.8, times: [0, 0.15, 0.75, 1] }}
+              >
+                {delta.value > 0 ? '+' : ''}
+                {delta.value}
+              </motion.span>
+            )}
+            {v}
+          </span>
         </div>
         <div
           role="meter"

@@ -1,3 +1,4 @@
+import type { Ref } from 'react'
 import { motion } from 'motion/react'
 import { Icon, type IconName } from './Icon'
 import { springs, toneClasses, type Tone } from './tones'
@@ -10,14 +11,21 @@ type ActionButtonProps = {
   disabled?: boolean
   /** Optional small count badge, e.g. food left in the bag. */
   badge?: number
+  /** For buttons that open a panel. */
+  expanded?: boolean
+  controls?: string
+  ref?: Ref<HTMLButtonElement>
 }
 
-export function ActionButton({ icon, label, tone, onClick, disabled, badge }: ActionButtonProps) {
+export function ActionButton({ icon, label, tone, onClick, disabled, badge, expanded, controls, ref }: ActionButtonProps) {
   const t = toneClasses[tone]
   return (
     <motion.button
+      ref={ref}
       type="button"
       onClick={onClick}
+      aria-expanded={expanded}
+      aria-controls={controls}
       disabled={disabled}
       whileHover={disabled ? undefined : { y: -3 }}
       whileTap={disabled ? undefined : { scale: 0.9, y: 1 }}
@@ -27,7 +35,7 @@ export function ActionButton({ icon, label, tone, onClick, disabled, badge }: Ac
       <span className={`relative grid size-10 place-items-center rounded-full ${t.chip} ${t.ink}`}>
         <Icon name={icon} size={24} />
         {badge !== undefined && (
-          <span className="absolute -right-2 -top-1 min-w-5 rounded-full bg-cocoa px-1 text-center text-[0.6875rem] font-bold leading-5 text-milk">
+          <span aria-label={`${badge} left`} className="absolute -right-2 -top-1 min-w-5 rounded-full bg-cocoa px-1 text-center text-[0.6875rem] font-bold leading-5 text-milk">
             {badge}
           </span>
         )}

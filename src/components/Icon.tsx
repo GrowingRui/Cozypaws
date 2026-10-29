@@ -22,10 +22,27 @@ export type IconName =
   | 'drumstick'
   | 'sparkle'
   | 'dice'
+  | 'cookie'
+  | 'carrot'
   | 'chevronLeft'
   | 'chevronRight'
 
 const paths: Record<IconName, React.ReactNode> = {
+  cookie: (
+    <>
+      <path d="M12 3.5l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.9l-4.8 2.5.9-5.4-3.9-3.8 5.4-.8Z" fill="currentColor" fillOpacity=".22" />
+      <path d="M12 3.5l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.9l-4.8 2.5.9-5.4-3.9-3.8 5.4-.8Z" />
+      <circle cx="10.5" cy="11" r=".9" fill="currentColor" />
+      <circle cx="13.6" cy="12.4" r=".9" fill="currentColor" />
+    </>
+  ),
+  carrot: (
+    <>
+      <path d="M14.5 9.5c1.4 1.4 1.4 3.5 0 5L6.3 20.6c-.8.6-1.9-.5-1.3-1.3l6.1-8.2c1.4-1.4 3.6-1.4 5 0Z" fill="currentColor" fillOpacity=".22" />
+      <path d="M14.5 9.5c1.4 1.4 1.4 3.5 0 5L6.3 20.6c-.8.6-1.9-.5-1.3-1.3l6.1-8.2c1.4-1.4 3.6-1.4 5 0Z" />
+      <path d="M15 9c.5-2 2-3.5 4.5-4M15 9c2-.3 3.8.3 5 1.8M15 9c-.2-2.2.5-4 2-5.5M9.5 14.5l1.5 1.5M8 17l1 1" />
+    </>
+  ),
   dice: (
     <>
       <rect x="4" y="4" width="16" height="16" rx="4.5" fill="currentColor" fillOpacity=".18" />

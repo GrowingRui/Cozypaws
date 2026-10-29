@@ -2,23 +2,32 @@ import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 
 import { AnimatePresence, motion, type PanInfo } from 'motion/react'
 import { Icon } from '../components/Icon'
 import { springs, toneClasses } from '../components/tones'
-import { NAME_MAX, SPECIES, SPECIES_ORDER, validateName } from '../game/pets'
+import { NAME_MAX, SPECIES, SPECIES_ORDER, suggestName, validateName } from '../game/pets'
 import type { AdoptedPet, PetMood, Species } from '../game/types'
 import { PetSprite } from '../pets/PetSprite'
 
 type Reaction = { mood: PetMood; line: string; key: number }
-
-const initialNames = Object.fromEntries(SPECIES_ORDER.map((id) => [id, SPECIES[id].defaultName])) as Record<Species, string>
 
 const pick = <T,>(list: T[], avoid?: T) => {
   const options = list.length > 1 ? list.filter((x) => x !== avoid) : list
   return options[Math.floor(Math.random() * options.length)]!
 }
 
-export function SelectScreen({ onAdopt }: { onAdopt: (pet: AdoptedPet) => void }) {
+type SelectScreenProps = {
+  onAdopt: (pet: AdoptedPet) => void
+  /** When set, this is an additional adoption and the screen offers a way back home. */
+  onCancel?: () => void
+  /** Names already used in the household. */
+  takenNames?: string[]
+  spotsLeft?: number
+}
+
+export function SelectScreen({ onAdopt, onCancel, takenNames = [], spotsLeft }: SelectScreenProps) {
   const [index, setIndex] = useState(0)
   const [direction, setDirection] = useState<1 | -1>(1)
-  const [names, setNames] = useState(initialNames)
+  const [names, setNames] = useState(
+    () => Object.fromEntries(SPECIES_ORDER.map((id) => [id, suggestName(id, takenNames)])) as Record<Species, string>,
+  )
   const [error, setError] = useState<string | null>(null)
   const [reaction, setReaction] = useState<Reaction | null>(null)
   const radioRefs = useRef<(HTMLButtonElement | null)[]>([])
@@ -64,7 +73,7 @@ export function SelectScreen({ onAdopt }: { onAdopt: (pet: AdoptedPet) => void }
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
-    const problem = validateName(name)
+    const problem = validateName(name, takenNames)
     setError(problem)
     if (problem) return
     onAdopt({ species, name: name.trim() })
@@ -75,13 +84,31 @@ export function SelectScreen({ onAdopt }: { onAdopt: (pet: AdoptedPet) => void }
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-6xl flex-col gap-6 px-3 pb-12 pt-6 sm:px-6 lg:pt-12">
-      <header className="flex flex-col gap-2 text-center lg:text-left">
-        <p className="flex items-center justify-center gap-2 font-display text-lg text-berry lg:justify-start">
-          <Icon name="paw" size={22} />
-          CozyPaws
+      <header className="relative flex flex-col gap-2 text-center lg:text-left">
+        {onCancel ? (
+          <motion.button
+            type="button"
+            onClick={onCancel}
+            whileHover={{ x: -3 }}
+            whileTap={{ scale: 0.95 }}
+            transition={springs.pop}
+            className="sticker flex min-h-11 items-center gap-1 self-start py-2 pl-2 pr-4 text-sm font-bold"
+          >
+            <Icon name="chevronLeft" size={20} />
+            Back home
+          </motion.button>
+        ) : (
+          <p className="flex items-center justify-center gap-2 font-display text-lg text-berry lg:justify-start">
+            <Icon name="paw" size={22} />
+            CozyPaws
+          </p>
+        )}
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl">{onCancel ? 'Who else is coming home?' : 'Who’s coming home with you?'}</h1>
+        <p className="text-cocoa-soft">
+          {onCancel && spotsLeft !== undefined
+            ? `There’s room for ${spotsLeft} more ${spotsLeft === 1 ? 'friend' : 'friends'}.`
+            : 'Meet each little one, then choose a name.'}
         </p>
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl">Who&rsquo;s coming home with you?</h1>
-        <p className="text-cocoa-soft">Meet each little one, then choose a name.</p>
       </header>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:items-start">

@@ -77,10 +77,23 @@ export const NAME_MAX = 14
 const NAME_PATTERN = /^[\p{L}\p{N}][\p{L}\p{N} '\-]*$/u
 
 /** Returns an error message for an invalid pet name, or null when it is fine. */
-export function validateName(raw: string): string | null {
+export function validateName(raw: string, taken: string[] = []): string | null {
   const name = raw.trim()
   if (name.length === 0) return 'Give your pet a name to continue.'
   if (name.length > NAME_MAX) return `Names can be up to ${NAME_MAX} characters.`
   if (!NAME_PATTERN.test(name)) return 'Use letters, numbers, spaces, hyphens or apostrophes.'
+  const clash = taken.find((t) => t.toLowerCase() === name.toLowerCase())
+  if (clash) return `You already have a pet called ${clash}. Try another name.`
   return null
+}
+
+/** The species' default name, or its first suggestion nobody in the household is using yet. */
+export function suggestName(species: Species, taken: string[]): string {
+  const used = new Set(taken.map((t) => t.toLowerCase()))
+  const info = SPECIES[species]
+  const free = [info.defaultName, ...info.names].find((n) => !used.has(n.toLowerCase()))
+  if (free) return free
+  let n = 2
+  while (used.has(`${info.defaultName} ${n}`.toLowerCase())) n++
+  return `${info.defaultName} ${n}`
 }

@@ -6,13 +6,21 @@ import { motion } from 'motion/react'
  * A thick milk-white frame with an inset room (wall, window, floor, rug).
  * The pet and its reactions are passed in as children and sit on the rug.
  */
-export function Stage({ children, label }: { children?: ReactNode; label: string }) {
+type StageProps = {
+  children?: ReactNode
+  label: string
+  night?: boolean
+  /** Extra things placed in the room behind the main pet (other pets, the nameplate). */
+  scenery?: ReactNode
+}
+
+export function Stage({ children, label, night = false, scenery }: StageProps) {
   return (
     <section
       aria-label={label}
       className="relative overflow-hidden rounded-[var(--radius-stage)] bg-milk p-2.5 shadow-[var(--shadow-float)] sm:p-3"
     >
-      <div className="relative isolate h-[min(52dvh,30rem)] min-h-[18rem] overflow-hidden rounded-[calc(var(--radius-stage)-0.625rem)] shadow-[inset_0_6px_18px_rgb(74_52_52/0.14)]">
+      <div className="relative isolate h-[clamp(17rem,44dvh,30rem)] lg:h-[min(60dvh,32rem)] overflow-hidden rounded-[calc(var(--radius-stage)-0.625rem)] shadow-[inset_0_6px_18px_rgb(74_52_52/0.14)]">
         {/* Wall: soft lavender stripes */}
         <div
           className="absolute inset-0 -z-10"
@@ -32,6 +40,26 @@ export function Stage({ children, label }: { children?: ReactNode; label: string
             animate={{ x: '420%' }}
             transition={{ duration: 34, repeat: Infinity, ease: 'linear', delay: 6 }}
           />
+          {/* Night sky fades in while the pet sleeps */}
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-b from-[#3d3a6b] to-[#6b5f9e]"
+            initial={false}
+            animate={{ opacity: night ? 1 : 0 }}
+            transition={{ duration: 1.2 }}
+          >
+            <span className="absolute right-[18%] top-[16%] size-5 rounded-full bg-[#fff3c4] shadow-[0_0_14px_4px_rgb(255_243_196/0.5)]" />
+            <span className="absolute right-[20%] top-[14%] size-4 rounded-full bg-[#3f3c6e]" />
+            {(
+              [
+                ['18%', '22%'],
+                ['30%', '58%'],
+                ['12%', '70%'],
+                ['55%', '40%'],
+              ] as const
+            ).map(([left, top]) => (
+              <span key={left + top} className="absolute size-1 rounded-full bg-milk" style={{ left, top }} />
+            ))}
+          </motion.div>
           <div className="absolute inset-y-0 left-1/2 w-1.5 -translate-x-1/2 bg-milk" />
           <div className="absolute bottom-0 left-0 h-3 w-full bg-blush-soft" />
         </div>
@@ -56,8 +84,21 @@ export function Stage({ children, label }: { children?: ReactNode; label: string
         />
         {/* Rug */}
         <div className="absolute bottom-[8%] left-1/2 h-[18%] w-[62%] max-w-[26rem] -translate-x-1/2 rounded-[50%] bg-mint shadow-[inset_0_0_0_6px_rgb(255_255_255/0.55)]" />
+        {scenery}
+        {/* Night: the room dims and a warm lamp glow pools around the pet */}
+        <motion.div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(42% 46% at 50% 78%, rgb(255 196 140 / 0.45), transparent 70%), linear-gradient(rgb(52 42 92 / 0.5), rgb(74 52 72 / 0.42))',
+          }}
+          initial={false}
+          animate={{ opacity: night ? 1 : 0 }}
+          transition={{ duration: 1.2 }}
+        />
         {/* Pet slot */}
-        <div className="absolute inset-x-0 bottom-[12%] flex justify-center">{children}</div>
+        {/* Only the pet itself takes clicks, so pets elsewhere in the room stay tappable */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-[12%] flex justify-center [&>*]:pointer-events-auto">{children}</div>
       </div>
     </section>
   )
