@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { CoinChip } from './components/CoinChip'
 import { Icon } from './components/Icon'
@@ -7,7 +7,10 @@ import { GameProvider, useGame } from './game/GameContext'
 import { createGame, MAX_PETS, newPetId, type GameState } from './game/state'
 import { HomeScreen } from './scenes/HomeScreen'
 import { SelectScreen } from './scenes/SelectScreen'
-import { WalkScreen } from './scenes/WalkScreen'
+
+// Walk and Study load on first visit, keeping the initial download small.
+const WalkScreen = lazy(() => import('./scenes/WalkScreen').then((m) => ({ default: m.WalkScreen })))
+const StudyScreen = lazy(() => import('./scenes/StudyScreen').then((m) => ({ default: m.StudyScreen })))
 
 /** Screens cross-fade with opacity only: a transform here would break the fixed nav bar. */
 function Screen({ children }: { children: ReactNode }) {
@@ -48,11 +51,13 @@ function House() {
   // True right after an adoption, so home plays the newcomer's welcome.
   const [welcome, setWelcome] = useState(false)
   const onWalk = !!state.walk
+  const studying = !!state.study
 
-  // A walk in progress always owns the screen.
+  // A walk or study session in progress always owns the screen.
   useEffect(() => {
     if (onWalk) setTab('walk')
-  }, [onWalk])
+    else if (studying) setTab('study')
+  }, [onWalk, studying])
 
   const view = adopting ? 'adopt' : tab
   const changeTab = (next: Tab) => {
@@ -81,15 +86,17 @@ function House() {
             />
           )}
           {view === 'home' && <HomeScreen welcome={welcome} onAdopt={() => setAdopting(true)} />}
-          {view === 'walk' && <WalkScreen onDone={() => changeTab('home')} />}
-          {view === 'bag' && <ComingSoon title="Bag" text="Your food and toys will live here." />}
-          {view === 'shop' && <ComingSoon title="Shop" text="Treats, toys and accessories are on their way." />}
+          <Suspense fallback={<div className="min-h-dvh" />}>
+            {view === 'walk' && <WalkScreen onDone={() => changeTab('home')} />}
+            {view === 'study' && <StudyScreen onDone={() => changeTab('home')} />}
+          </Suspense>
+          {view === 'shop' && <ComingSoon title="Shop" text="Treats, toys and accessories are on their way, along with your bag." />}
         </Screen>
       </AnimatePresence>
 
-      {/* The nav bar hides during adoption and while out on a walk */}
+      {/* The nav bar hides during adoption, walks and study sessions */}
       <AnimatePresence>
-        {!adopting && !onWalk && (
+        {!adopting && !onWalk && !studying && (
           <motion.div
             className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
             initial={{ opacity: 0, y: 24 }}

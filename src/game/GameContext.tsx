@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, type ReactNode } from 'react'
 import type { FoodId } from './items'
 import { gameReducer } from './logic'
-import type { CareAction, GameState, NewPet, RouteId, TogetherGame, WalkEventKind } from './state'
+import type { CareAction, CompanionMode, GameState, NewPet, RouteId, StudyConfig, TogetherGame, WalkEventKind } from './state'
 
 type GameApi = {
   state: GameState
@@ -19,6 +19,14 @@ type GameApi = {
   napTogether: (petIds: string[]) => void
   dinner: () => void
   socialize: (a: string, b: string) => void
+  /** Care for a specific pet, making it the one on stage. */
+  careFor: (petId: string, action: CareAction) => void
+  startStudy: (config: StudyConfig, companions: { petId: string; mode: CompanionMode }[]) => void
+  pauseStudy: () => void
+  resumeStudy: () => void
+  skipBreak: () => void
+  endStudy: () => void
+  closeStudy: () => void
 }
 
 const GameContext = createContext<GameApi | null>(null)
@@ -51,6 +59,13 @@ export function GameProvider({ initial, children }: { initial: GameState; childr
       napTogether: (petIds) => dispatch({ type: 'napTogether', petIds, now: Date.now() }),
       dinner: () => dispatch({ type: 'dinner', now: Date.now() }),
       socialize: (a, b) => dispatch({ type: 'socialize', a, b, now: Date.now() }),
+      careFor: (petId, action) => dispatch({ type: 'care', action, petId, now: Date.now() }),
+      startStudy: (config, companions) => dispatch({ type: 'startStudy', config, companions, now: Date.now() }),
+      pauseStudy: () => dispatch({ type: 'pauseStudy', now: Date.now() }),
+      resumeStudy: () => dispatch({ type: 'resumeStudy', now: Date.now() }),
+      skipBreak: () => dispatch({ type: 'skipBreak', now: Date.now() }),
+      endStudy: () => dispatch({ type: 'endStudy', now: Date.now() }),
+      closeStudy: () => dispatch({ type: 'closeStudy', now: Date.now() }),
     }),
     [],
   )

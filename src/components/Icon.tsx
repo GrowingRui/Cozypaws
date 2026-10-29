@@ -22,6 +22,9 @@ export type IconName =
   | 'drumstick'
   | 'sparkle'
   | 'dice'
+  | 'book'
+  | 'pause'
+  | 'play'
   | 'cookie'
   | 'carrot'
   | 'chevronLeft'
@@ -43,6 +46,16 @@ const paths: Record<IconName, React.ReactNode> = {
       <path d="M15 9c.5-2 2-3.5 4.5-4M15 9c2-.3 3.8.3 5 1.8M15 9c-.2-2.2.5-4 2-5.5M9.5 14.5l1.5 1.5M8 17l1 1" />
     </>
   ),
+  book: (
+    <>
+      <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v15.5H5.5A1.5 1.5 0 0 1 4 18Z" fill="currentColor" fillOpacity=".2" />
+      <path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v15.5h5.5A1.5 1.5 0 0 0 20 18Z" fill="currentColor" fillOpacity=".1" />
+      <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11a1 1 0 0 1 1 1v15a1.5 1.5 0 0 0-1.5-1.5H4ZM20 5.5A1.5 1.5 0 0 0 18.5 4H13a1 1 0 0 0-1 1v15a1.5 1.5 0 0 1 1.5-1.5H20Z" />
+      <path d="M7 8h2M15 8h2" />
+    </>
+  ),
+  pause: <path d="M9 6v12M15 6v12" strokeWidth={3} />,
+  play: <path d="M8 5.5v13l10-6.5Z" fill="currentColor" fillOpacity=".25" />,
   dice: (
     <>
       <rect x="4" y="4" width="16" height="16" rx="4.5" fill="currentColor" fillOpacity=".18" />

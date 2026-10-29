@@ -2,12 +2,12 @@ import { motion } from 'motion/react'
 import { Icon, type IconName } from './Icon'
 import { springs } from './tones'
 
-export type Tab = 'home' | 'walk' | 'bag' | 'shop'
+export type Tab = 'home' | 'walk' | 'study' | 'shop'
 
 const tabs: { id: Tab; label: string; icon: IconName }[] = [
   { id: 'home', label: 'Home', icon: 'home' },
   { id: 'walk', label: 'Walk', icon: 'paw' },
-  { id: 'bag', label: 'Bag', icon: 'bag' },
+  { id: 'study', label: 'Study', icon: 'book' },
   { id: 'shop', label: 'Shop', icon: 'shop' },
 ]
 

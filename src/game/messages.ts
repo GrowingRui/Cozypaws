@@ -46,6 +46,12 @@ export function eventLine(event: GameEvent, species: Species, nameOf: (id: strin
       return pick(['Snuggle time...', 'Goodnight, everyone.', 'Cosy pile!'])
     case 'dinner':
       return pick(['Dinner time! Yum!', 'Everyone eat up!', 'Best dinner party ever.'])
+    case 'study':
+      return event.studyPhase === 'break'
+        ? pick(['Break time! Stretch with me?', 'You did it! Time for a little break.'])
+        : event.studyPhase === 'done'
+          ? pick(['All done! I’m so proud of you.', 'Great studying today!'])
+          : pick(['Back to it. I’ll be right here.', 'Let’s focus together.'])
     case 'walk':
       return pick(['What a lovely walk!', 'Home sweet home!', 'Can we go again tomorrow?'])
     case 'sleep':
@@ -64,6 +70,8 @@ export function eventLine(event: GameEvent, species: Species, nameOf: (id: strin
           return 'This one needs a friend who’s awake.'
         case 'noOneHungry':
           return 'Nobody is hungry right now.'
+        case 'cantStudy':
+          return 'Let’s finish what we’re doing first.'
         case 'cantWalk':
           return 'Someone is too sleepy for a walk.'
         case 'houseFull':

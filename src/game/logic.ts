@@ -1,10 +1,12 @@
-import { addXp, applyStats, clamp, diff, emit, refuse, repeatFactor, replacePet, scaleGains } from './core'
+import { addStats, addXp, applyStats, clamp, diff, emit, refuse, repeatFactor, replacePet, scaleGains } from './core'
 import { FOODS, type FoodId } from './items'
 import {
   activePet,
   createPet,
   MAX_PETS,
   type CareAction,
+  type CompanionMode,
+  type StudyConfig,
   type GameEvent,
   type GameState,
   type NewPet,
@@ -15,6 +17,7 @@ import {
   type WalkEventKind,
 } from './state'
 import type { PetMood } from './types'
+import { advanceStudy, closeStudy, companionGains, endStudy, pauseStudy, resumeStudy, skipBreak, startStudy, studyCompanions } from './study'
 import { dinner, napEffects, napTogether, playTogether, SNUGGLE_ENERGY_BOOST, socialize } from './together'
 import { closeWalk, finishWalk, startWalk, walkEvent } from './walk'
 
@@ -74,13 +77,25 @@ export function tick(state: GameState, now: number): GameState {
   const minutes = elapsed / 60000
   // Pets napping alongside a pal rest faster, and napping together grows friendship.
   const nap = napEffects(state, minutes)
-  let next: GameState = { ...nap.next, lastTick: now, pets: state.pets.map((p) => tickPet(p, minutes, nap.energyBoost.has(p.id))) }
+  // Study companions don't decline while you study; during focus time they gain a little instead.
+  const companions = studyCompanions(state)
+  const focusing = state.study?.phase === 'focus' && state.study.pausedAt === null
+  let study = state.study
+  const pets = state.pets.map((p) => {
+    const mode = companions.get(p.id)
+    if (!mode) return tickPet(p, minutes, nap.energyBoost.has(p.id))
+    if (!focusing || !study) return p
+    const gained = companionGains(p, mode, minutes)
+    study = { ...study, gains: { ...study.gains, [p.id]: addStats(study.gains[p.id] ?? {}, gained.change) } }
+    return gained.pet
+  })
+  let next: GameState = { ...nap.next, lastTick: now, pets, study }
 
   // Sleeping pets wake up on their own once fully rested.
   for (const pet of next.pets) {
     if (pet.sleeping && pet.stats.energy >= 100) next = wakePet(next, pet.id, true)
   }
-  return next
+  return advanceStudy(next, now)
 }
 
 // ---- Helpers ------------------------------------------------------------------------------
@@ -175,7 +190,7 @@ export function switchPet(state: GameState, petId: string): GameState {
 export type GameAction =
   | { type: 'tick'; now: number }
   | { type: 'feed'; food: FoodId; now: number }
-  | { type: 'care'; action: CareAction; now: number }
+  | { type: 'care'; action: CareAction; now: number; petId?: string }
   | { type: 'sleep'; now: number }
   | { type: 'wake'; now: number }
   | { type: 'adopt'; pet: NewPet; now: number }
@@ -188,6 +203,12 @@ export type GameAction =
   | { type: 'napTogether'; petIds: string[]; now: number }
   | { type: 'dinner'; now: number }
   | { type: 'socialize'; a: string; b: string; now: number }
+  | { type: 'startStudy'; config: StudyConfig; companions: { petId: string; mode: CompanionMode }[]; now: number }
+  | { type: 'pauseStudy'; now: number }
+  | { type: 'resumeStudy'; now: number }
+  | { type: 'skipBreak'; now: number }
+  | { type: 'endStudy'; now: number }
+  | { type: 'closeStudy'; now: number }
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   // Bring time-based stats up to date before applying any action.
@@ -198,7 +219,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'feed':
       return feed(current, action.food)
     case 'care':
-      return care(current, action.action, action.now)
+      // Caring for a specific pet (e.g. a pat during a study break) makes it the one on stage.
+      return care(action.petId && current.pets.some((p) => p.id === action.petId) ? { ...current, activeId: action.petId } : current, action.action, action.now)
     case 'sleep':
       return sleep(current)
     case 'wake':
@@ -223,6 +245,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return dinner(current)
     case 'socialize':
       return socialize(current, action.a, action.b)
+    case 'startStudy':
+      return startStudy(current, action.config, action.companions, action.now)
+    case 'pauseStudy':
+      return pauseStudy(current, action.now)
+    case 'resumeStudy':
+      return resumeStudy(current, action.now)
+    case 'skipBreak':
+      return skipBreak(current, action.now)
+    case 'endStudy':
+      return endStudy(current, action.now)
+    case 'closeStudy':
+      return closeStudy(current)
   }
 }
 

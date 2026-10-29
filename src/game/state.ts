@@ -17,14 +17,14 @@ export type CareAction = 'pet' | 'play' | 'fetch'
 export type RecentKey = CareAction | 'together'
 export type TogetherGame = 'catch' | 'tug'
 
-export type RefuseReason = 'full' | 'noFood' | 'tooTired' | 'asleep' | 'houseFull' | 'cantWalk' | 'buddyTired' | 'needTwo' | 'noOneHungry'
+export type RefuseReason = 'full' | 'noFood' | 'tooTired' | 'asleep' | 'houseFull' | 'cantWalk' | 'buddyTired' | 'needTwo' | 'noOneHungry' | 'cantStudy'
 
 /** Something that just happened, for the UI to react to. A new id means "play the reaction again". */
 export type GameEvent = {
   id: number
   /** The pet this happened to. */
   petId: string
-  kind: 'feed' | 'pet' | 'play' | 'fetch' | 'sleep' | 'wake' | 'refuse' | 'adopt' | 'switch' | 'walk' | 'together' | 'napTogether' | 'dinner'
+  kind: 'feed' | 'pet' | 'play' | 'fetch' | 'sleep' | 'wake' | 'refuse' | 'adopt' | 'switch' | 'walk' | 'together' | 'napTogether' | 'dinner' | 'study'
   food?: FoodId
   reason?: RefuseReason
   deltas: Partial<Stats>
@@ -42,6 +42,8 @@ export type GameEvent = {
   petIds?: string[]
   /** Friendship gained by each pair in this event. */
   friendship?: number
+  /** Study: the phase that just began. */
+  studyPhase?: StudyPhase
 }
 
 /** One pet in the household. Each pet has its own needs, progress and sleep. */
@@ -71,6 +73,9 @@ export type GameState = {
   friendships: Record<string, number>
   /** The walk in progress (or just finished, while its results are shown). */
   walk: WalkState | null
+  /** The study session in progress (or just finished, while its summary is shown). */
+  study: StudySession | null
+  studyLog: StudyLog
   eventSeq: number
   event: GameEvent | null
 }
@@ -107,6 +112,43 @@ export type WalkState = {
   summary?: WalkSummary
 }
 
+export type StudyPhase = 'focus' | 'break' | 'done'
+export type CompanionMode = 'nap' | 'hang'
+
+export type StudyConfig = { focusMin: number; breakMin: number; rounds: number }
+
+export type StudySession = {
+  config: StudyConfig
+  companions: { petId: string; mode: CompanionMode }[]
+  startedAt: number
+  phase: StudyPhase
+  round: number
+  phaseStartedAt: number
+  phaseEndsAt: number
+  /** Set while paused; the phase clock stops until resumed. */
+  pausedAt: number | null
+  completedRounds: number
+  focusedMinutes: number
+  coins: number
+  /** XP each companion earned this session. */
+  xp: number
+  /** Stat changes per companion over the whole session. */
+  gains: Record<string, Partial<Stats>>
+  endedEarly: boolean
+}
+
+export type StudyLog = {
+  /** Local date (YYYY-MM-DD) that the "today" counters belong to. */
+  day: string
+  minutesToday: number
+  /** Minutes today that earned coins (capped per day). */
+  rewardedToday: number
+  streak: number
+  /** Last day a focus round was completed. */
+  lastStudyDay: string | null
+  totalMinutes: number
+}
+
 export const pairKey = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`)
 
 export const MAX_PETS = 4
@@ -137,6 +179,8 @@ export function createGame(first: NewPet, now: number): GameState {
     lastTick: now,
     friendships: {},
     walk: null,
+    study: null,
+    studyLog: { day: '', minutesToday: 0, rewardedToday: 0, streak: 0, lastStudyDay: null, totalMinutes: 0 },
     eventSeq: 0,
     event: null,
   }
