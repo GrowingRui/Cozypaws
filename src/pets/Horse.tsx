@@ -23,9 +23,9 @@ export function Horse({ mood, blink, accessory }: RigProps) {
         style={{ originX: 0.1, originY: 0.05 }}
         {...tailMotion(mood, 'swish')}
       />
-      {/* Legs with hooves, swinging when walking */}
+      {/* Legs with hooves, stepping in place when walking so the horse keeps facing forward */}
       {([[76, 0], [110, 1]] as const).map(([x, phase]) => (
-        <motion.g key={x} style={{ originX: 0.5, originY: 0 }} {...legMotion(mood, phase, 'swing')}>
+        <motion.g key={x} style={{ originX: 0.5, originY: 0 }} {...legMotion(mood, phase)}>
           <rect x={x} y={164} width={14} height={25} rx={7} fill={COAT} {...OUTLINE} />
           <path d={`M${x} 181h14v3a5 5 0 0 1-5 5h-4a5 5 0 0 1-5-5Z`} fill={HOOF} stroke={INK} strokeWidth={3} strokeLinejoin="round" />
         </motion.g>
@@ -42,7 +42,8 @@ export function Horse({ mood, blink, accessory }: RigProps) {
           <path d="M134 58 140 22 112 44Z" fill={COAT} {...OUTLINE} />
           <path d="M132 50 135 32 120 44Z" fill={INNER_EAR} />
         </motion.g>
-        {/* Mane falling down the side of the neck */}
+        {/* Mane falling down both sides of the neck, so the horse reads as facing forward */}
+        <path d="M60 64C40 78 40 104 52 122 58 110 64 100 62 86Z" fill={MANE} {...OUTLINE} />
         <path d="M140 64C160 78 160 104 148 122 142 110 136 100 138 86Z" fill={MANE} {...OUTLINE} />
         <ellipse cx={100} cy={84} rx={50} ry={44} fill={COAT} {...OUTLINE} />
         <ellipse cx={100} cy={118} rx={35} ry={23} fill={MUZZLE} {...OUTLINE} />
