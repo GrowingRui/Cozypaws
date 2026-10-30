@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'motion/react'
+import { useBackLayer } from '../lib/backStack'
 import { playSfx, setSoundOn, useSoundOn } from '../lib/sound'
 import { Icon } from './Icon'
 import { springs } from './tones'
@@ -28,9 +29,10 @@ export function GameMenu({ petNames, onNewGame }: { petNames: string[]; onNewGam
   )
 }
 
-/** Opens as a modal <dialog>: focus stays inside, the page behind is inert, Escape closes it. */
-function useModal() {
+/** Opens as a modal <dialog>: focus stays inside, the page behind is inert, Escape and back close it. */
+function useModal(onClose: () => void) {
   const ref = useRef<HTMLDialogElement>(null)
+  useBackLayer(true, onClose)
   useEffect(() => {
     const dialog = ref.current
     dialog?.showModal()
@@ -40,7 +42,7 @@ function useModal() {
 }
 
 function SettingsDialog({ onClose, onNewGame }: { onClose: () => void; onNewGame: () => void }) {
-  const ref = useModal()
+  const ref = useModal(onClose)
   const soundOn = useSoundOn()
 
   return (
@@ -125,7 +127,7 @@ function SettingsDialog({ onClose, onNewGame }: { onClose: () => void; onNewGame
 
 
 function ConfirmNewGame({ petNames, onCancel, onConfirm }: { petNames: string[]; onCancel: () => void; onConfirm: () => void }) {
-  const ref = useModal()
+  const ref = useModal(onCancel)
 
   const who = petNames.length === 1 ? petNames[0] : petNames.length === 2 ? `${petNames[0]} and ${petNames[1]}` : 'all your pets'
 

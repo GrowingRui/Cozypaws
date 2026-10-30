@@ -26,6 +26,7 @@ function soundFor(event: GameEvent): Sfx | null {
     case 'wake':
       return 'wake'
     case 'buy':
+    case 'goal':
       return 'coin'
     case 'equip':
       return 'sparkle'

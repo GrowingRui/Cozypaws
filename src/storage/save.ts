@@ -48,6 +48,8 @@ export function parseSave(text: string | null): GameState | null {
     studyLog: { ...base.studyLog, ...(isObject(raw.studyLog) ? raw.studyLog : {}) },
     owned: { ...base.owned, ...(isObject(raw.owned) ? raw.owned : {}) },
     friendships: isObject(raw.friendships) ? raw.friendships : {},
+    // Saves from before daily goals start with none; a fresh set is picked on the next tick.
+    daily: isObject(raw.daily) && Array.isArray(raw.daily.goals) ? raw.daily : base.daily,
     // Reactions belong to the moment they happened; don't replay them on load.
     event: null,
   } as GameState

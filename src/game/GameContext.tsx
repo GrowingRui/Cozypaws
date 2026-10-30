@@ -31,6 +31,7 @@ type GameApi = {
   closeStudy: () => void
   buy: (itemId: string, quantity?: number) => void
   equip: (petId: string, accessory: Accessory | null) => void
+  claimGoal: (index: number) => void
 }
 
 const GameContext = createContext<GameApi | null>(null)
@@ -111,6 +112,7 @@ export function GameProvider({ initial, persist = false, onCleared, children }: 
       closeStudy: () => dispatch({ type: 'closeStudy', now: Date.now() }),
       buy: (itemId, quantity) => dispatch({ type: 'buy', itemId, quantity, now: Date.now() }),
       equip: (petId, accessory) => dispatch({ type: 'equip', petId, accessory, now: Date.now() }),
+      claimGoal: (index) => dispatch({ type: 'claimGoal', index, now: Date.now() }),
     }),
     [],
   )

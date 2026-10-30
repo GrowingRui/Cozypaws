@@ -3,6 +3,7 @@ import { AnimatePresence, LayoutGroup, motion, useAnimate } from 'motion/react'
 import { ActionButton } from '../components/ActionButton'
 import { PlayTray, TogetherTray } from '../components/CareTrays'
 import { CoinChip } from '../components/CoinChip'
+import { DailyGoals } from '../components/DailyGoals'
 import { FoodTray, STAT_LABEL } from '../components/FoodTray'
 import { FriendsList } from '../components/FriendsList'
 import { GameMenu } from '../components/GameMenu'
@@ -12,6 +13,7 @@ import { PetSwitcher } from '../components/PetSwitcher'
 import { StatBar } from '../components/StatBar'
 import { springs, type Tone } from '../components/tones'
 import { useGame } from '../game/GameContext'
+import { useBackLayer } from '../lib/backStack'
 import type { FoodId } from '../game/items'
 import { restingMood, xpToNext } from '../game/logic'
 import { eventLine, greetingLine, idleLine } from '../game/messages'
@@ -67,7 +69,7 @@ type HomeScreenProps = {
 }
 
 export function HomeScreen({ onAdopt, onNewGame, welcome = false }: HomeScreenProps) {
-  const { state, feed, care, sleep, wake, switchPet, playTogether, napTogether, dinner, socialize } = useGame()
+  const { state, feed, care, sleep, wake, switchPet, playTogether, napTogether, dinner, socialize, claimGoal } = useGame()
   const { event } = state
   const pet = activePet(state)
   const { stats, sleeping } = pet
@@ -174,6 +176,10 @@ export function HomeScreen({ onAdopt, onNewGame, welcome = false }: HomeScreenPr
       case 'wake':
         setReaction({ mood: 'happy', ms: 1200, id })
         break
+      case 'goal':
+        setReaction({ mood: 'excited', ms: 1600, id })
+        burst('sparkles', '50%', '20%')
+        break
       case 'refuse':
         // A little head-shake says "no" without changing anything.
         animatePet(petScope.current, { x: [0, -8, 8, -5, 5, 0] }, { duration: 0.45 })
@@ -267,6 +273,9 @@ export function HomeScreen({ onAdopt, onNewGame, welcome = false }: HomeScreenPr
     }, 60)
     return () => clearTimeout(t)
   }, [tray])
+
+  // Back closes an open tray before it leaves Home.
+  useBackLayer(tray !== null, closeTray)
 
   // Trays close when the pet on stage falls asleep.
   useEffect(() => {
@@ -536,20 +545,23 @@ export function HomeScreen({ onAdopt, onNewGame, welcome = false }: HomeScreenPr
           </div>
         </div>
 
-        <aside aria-label={`How ${pet.name} is doing`} className="sticker stitch p-4 sm:p-6">
-          <h2 className="sr-only lg:not-sr-only lg:mb-3 lg:text-lg">How {pet.name} feels</h2>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3 lg:grid-cols-1 lg:gap-y-3">
-            {STAT_KEYS.map((k) => (
-              <StatBar key={k} label={STAT_LABEL[k]} icon={STAT_STYLE[k].icon} tone={STAT_STYLE[k].tone} value={stats[k]} delta={deltas[k]} />
-            ))}
-          </div>
-          {sleeping && (
-            <p className="mt-3 text-sm font-bold text-cocoa-soft">
-              {others.some((o) => o.sleeping) ? `${pet.name} is napping with friends.` : `${pet.name} is sleeping.`} Energy is coming back.
-            </p>
-          )}
-          <FriendsList state={state} pet={pet} />
-        </aside>
+        <div className="flex flex-col gap-4">
+          <aside aria-label={`How ${pet.name} is doing`} className="sticker stitch p-4 sm:p-6">
+            <h2 className="sr-only lg:not-sr-only lg:mb-3 lg:text-lg">How {pet.name} feels</h2>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3 lg:grid-cols-1 lg:gap-y-3">
+              {STAT_KEYS.map((k) => (
+                <StatBar key={k} label={STAT_LABEL[k]} icon={STAT_STYLE[k].icon} tone={STAT_STYLE[k].tone} value={stats[k]} delta={deltas[k]} />
+              ))}
+            </div>
+            {sleeping && (
+              <p className="mt-3 text-sm font-bold text-cocoa-soft">
+                {others.some((o) => o.sleeping) ? `${pet.name} is napping with friends.` : `${pet.name} is sleeping.`} Energy is coming back.
+              </p>
+            )}
+            <FriendsList state={state} pet={pet} />
+          </aside>
+          <DailyGoals daily={state.daily} petCount={state.pets.length} onClaim={claimGoal} />
+        </div>
       </main>
     </div>
   )

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { motion } from 'motion/react'
 import { awayDuration, type AwaySummary } from '../game/away'
 import { STAT_KEYS, type PetState } from '../game/state'
+import { useBackLayer } from '../lib/backStack'
 import { playSfx } from '../lib/sound'
 import { PetSprite } from '../pets/PetSprite'
 import { STAT_LABEL } from './FoodTray'
@@ -28,6 +29,7 @@ export function WelcomeBack({ summary, pets, onClose }: WelcomeBackProps) {
     playSfx('wake')
     onClose()
   }
+  useBackLayer(true, close)
   const shown = summary.pets.flatMap((news) => {
     const pet = pets.find((p) => p.id === news.petId)
     return pet ? [{ news, pet }] : []

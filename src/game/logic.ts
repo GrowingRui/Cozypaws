@@ -17,6 +17,7 @@ import {
   type WalkEventKind,
 } from './state'
 import type { Accessory, PetMood } from './types'
+import { claimGoal, dailyForToday, trackGoals } from './daily'
 import { buy, equip } from './shop'
 import { advanceStudy, closeStudy, companionGains, endStudy, pauseStudy, resumeStudy, skipBreak, startStudy, studyCompanions } from './study'
 import { dinner, napEffects, napTogether, playTogether, SNUGGLE_ENERGY_BOOST, socialize } from './together'
@@ -220,8 +221,14 @@ export type GameAction =
   | { type: 'closeStudy'; now: number }
   | { type: 'buy'; itemId: string; quantity?: number; now: number }
   | { type: 'equip'; petId: string; accessory: Accessory | null; now: number }
+  | { type: 'claimGoal'; index: number; now: number }
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
+  // Whatever happened also counts toward today's goals (and a new day brings new ones).
+  return trackGoals(state, dailyForToday(applyAction(state, action), action.now))
+}
+
+function applyAction(state: GameState, action: GameAction): GameState {
   if (action.type === 'load') return tick(action.state, action.now)
   // Bring time-based stats up to date before applying any action.
   const current = tick(state, action.now)
@@ -273,6 +280,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return buy(current, action.itemId, action.quantity)
     case 'equip':
       return equip(current, action.petId, action.accessory)
+    case 'claimGoal':
+      return claimGoal(current, action.index)
   }
 }
 

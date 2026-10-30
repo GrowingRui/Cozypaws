@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
+import { GoalToast } from './components/GoalToast'
 import { NavBar, type Tab } from './components/NavBar'
 import { WelcomeBack } from './components/WelcomeBack'
 import { summarizeAway, type AwaySummary } from './game/away'
@@ -7,6 +8,7 @@ import { GameProvider, useGame } from './game/GameContext'
 import { createGame, MAX_PETS, newPetId, type GameState } from './game/state'
 import { HomeScreen } from './scenes/HomeScreen'
 import { SelectScreen } from './scenes/SelectScreen'
+import { useBackLayer } from './lib/backStack'
 import { useEventSounds } from './lib/useEventSounds'
 import { clearGame, loadGame } from './storage/save'
 
@@ -51,6 +53,14 @@ function House({ onNewGame, away }: { onNewGame: () => void; away: AwaySummary |
     setTab(next)
   }
 
+  // Back returns to Home from any other screen. A walk or study session in progress stays put:
+  // it has its own button for ending early.
+  useBackLayer(view !== 'home', () => {
+    setWelcome(false)
+    if (adopting) setAdopting(false)
+    else if (!onWalk && !studying) setTab('home')
+  })
+
   return (
     <>
       <AnimatePresence mode="wait" onExitComplete={scrollTop}>
@@ -93,6 +103,8 @@ function House({ onNewGame, away }: { onNewGame: () => void; away: AwaySummary |
           </motion.div>
         )}
       </AnimatePresence>
+
+      <GoalToast daily={state.daily} petCount={state.pets.length} onHome={view === 'home'} />
 
       {showAway && away && <WelcomeBack summary={away} pets={state.pets} onClose={() => setShowAway(false)} />}
     </>

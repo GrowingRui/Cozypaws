@@ -1,3 +1,4 @@
+import { emptyDaily, type DailyGoals } from './daily'
 import type { FoodId } from './items'
 import type { Accessory, Species } from './types'
 
@@ -24,7 +25,7 @@ export type GameEvent = {
   id: number
   /** The pet this happened to. */
   petId: string
-  kind: 'feed' | 'pet' | 'play' | 'fetch' | 'sleep' | 'wake' | 'refuse' | 'adopt' | 'switch' | 'walk' | 'together' | 'napTogether' | 'dinner' | 'study' | 'buy' | 'equip' | 'feather' | 'bubbles'
+  kind: 'feed' | 'pet' | 'play' | 'fetch' | 'sleep' | 'wake' | 'refuse' | 'adopt' | 'switch' | 'walk' | 'together' | 'napTogether' | 'dinner' | 'study' | 'buy' | 'equip' | 'feather' | 'bubbles' | 'goal'
   food?: FoodId
   reason?: RefuseReason
   deltas: Partial<Stats>
@@ -79,6 +80,8 @@ export type GameState = {
   /** The study session in progress (or just finished, while its summary is shown). */
   study: StudySession | null
   studyLog: StudyLog
+  /** Today's goals. */
+  daily: DailyGoals
   /** Things the household owns. Accessories can be worn by any pet. */
   owned: { accessories: Accessory[]; toys: ToyId[]; decor: DecorId[] }
   eventSeq: number
@@ -189,6 +192,7 @@ export function createGame(first: NewPet, now: number): GameState {
     walk: null,
     study: null,
     studyLog: { day: '', minutesToday: 0, rewardedToday: 0, streak: 0, lastStudyDay: null, totalMinutes: 0 },
+    daily: emptyDaily(),
     owned: { accessories: [], toys: [], decor: [] },
     eventSeq: 0,
     event: null,

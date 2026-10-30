@@ -41,6 +41,8 @@ export function eventLine(event: GameEvent, species: Species, nameOf: (id: strin
       return event.diminished ? 'So many bubbles...' : pick(['Pop! Pop! Pop!', 'Bubbles! So shiny!', 'Look, a rainbow in that one!'])
     case 'buy':
       return 'Ooh, something new!'
+    case 'goal':
+      return event.food ? 'Every goal done today! Honey cake for us!' : pick(['We did it!', 'Goal done! Go us!', 'High paw!'])
     case 'equip':
       return pick(['Do I look cute?', 'I love it!', 'So stylish!'])
     case 'adopt':
