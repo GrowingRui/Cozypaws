@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useMemo, useReducer, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, useReducer, useRef, type ReactNode } from 'react'
+import { parseSave, SAVE_KEY, saveGame } from '../storage/save'
 import type { FoodId } from './items'
 import { gameReducer } from './logic'
 import type { Accessory } from './types'
@@ -36,8 +37,47 @@ const GameContext = createContext<GameApi | null>(null)
 
 const TICK_MS = 1000
 
-export function GameProvider({ initial, children }: { initial: GameState; children: ReactNode }) {
+type GameProviderProps = {
+  initial: GameState
+  /** Save every change to localStorage. Off in tests and dev galleries. */
+  persist?: boolean
+  /** Another tab started a new game. */
+  onCleared?: () => void
+  children: ReactNode
+}
+
+export function GameProvider({ initial, persist = false, onCleared, children }: GameProviderProps) {
   const [state, dispatch] = useReducer(gameReducer, initial)
+  // Set when the state was just loaded from another tab, so it isn't written straight back.
+  const fromOutside = useRef(false)
+  const clearedRef = useRef(onCleared)
+  clearedRef.current = onCleared
+
+  useEffect(() => {
+    if (!persist) return
+    if (fromOutside.current) {
+      fromOutside.current = false
+      return
+    }
+    saveGame(state)
+  }, [persist, state])
+
+  // With the game open in two tabs, follow whichever one changed last instead of overwriting it.
+  useEffect(() => {
+    if (!persist) return
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== SAVE_KEY && e.key !== null) return
+      const next = parseSave(e.newValue)
+      if (!next) {
+        if (e.newValue === null) clearedRef.current?.()
+        return
+      }
+      fromOutside.current = true
+      dispatch({ type: 'load', state: next, now: Date.now() })
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [persist])
 
   // Time keeps passing while the game is open.
   useEffect(() => {

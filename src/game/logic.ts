@@ -196,6 +196,8 @@ export function switchPet(state: GameState, petId: string): GameState {
 
 export type GameAction =
   | { type: 'tick'; now: number }
+  /** Replace everything with a state saved elsewhere (another tab). */
+  | { type: 'load'; state: GameState; now: number }
   | { type: 'feed'; food: FoodId; now: number }
   | { type: 'care'; action: CareAction; now: number; petId?: string }
   | { type: 'sleep'; now: number }
@@ -220,6 +222,7 @@ export type GameAction =
   | { type: 'equip'; petId: string; accessory: Accessory | null; now: number }
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
+  if (action.type === 'load') return tick(action.state, action.now)
   // Bring time-based stats up to date before applying any action.
   const current = tick(state, action.now)
   switch (action.type) {

@@ -35,6 +35,7 @@ export type IconName =
   | 'carrot'
   | 'chevronLeft'
   | 'chevronRight'
+  | 'restart'
 
 const paths: Record<IconName, React.ReactNode> = {
   cookie: (
@@ -122,6 +123,12 @@ const paths: Record<IconName, React.ReactNode> = {
   ),
   chevronLeft: <path d="M14.5 5.5 8 12l6.5 6.5" strokeWidth={2.6} />,
   chevronRight: <path d="M9.5 5.5 16 12l-6.5 6.5" strokeWidth={2.6} />,
+  restart: (
+    <>
+      <path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3" />
+      <path d="M6.5 3v4h4" />
+    </>
+  ),
   bowl: (
     <>
       <path d="M3.5 11.5h17a8.5 8.5 0 0 1-17 0Z" fill="currentColor" fillOpacity=".18" />

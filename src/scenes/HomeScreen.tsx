@@ -5,6 +5,7 @@ import { PlayTray, TogetherTray } from '../components/CareTrays'
 import { CoinChip } from '../components/CoinChip'
 import { FoodTray, STAT_LABEL } from '../components/FoodTray'
 import { FriendsList } from '../components/FriendsList'
+import { NewGameButton } from '../components/NewGameButton'
 import { Icon, type IconName } from '../components/Icon'
 import { Burst, type BurstKind } from '../components/Particles'
 import { PetSwitcher } from '../components/PetSwitcher'
@@ -59,11 +60,13 @@ const TOGETHER_MS = 2500
 
 type HomeScreenProps = {
   onAdopt: () => void
+  /** Wipe the save and go back to choosing a first pet. */
+  onNewGame: () => void
   /** Play the welcome for a pet that was adopted just before this screen opened. */
   welcome?: boolean
 }
 
-export function HomeScreen({ onAdopt, welcome = false }: HomeScreenProps) {
+export function HomeScreen({ onAdopt, onNewGame, welcome = false }: HomeScreenProps) {
   const { state, feed, care, sleep, wake, switchPet, playTogether, napTogether, dinner, socialize } = useGame()
   const { event } = state
   const pet = activePet(state)
@@ -289,7 +292,10 @@ export function HomeScreen({ onAdopt, welcome = false }: HomeScreenProps) {
     <div className="mx-auto flex min-h-dvh w-full max-w-6xl flex-col gap-4 px-3 pb-28 pt-3 sm:px-6 sm:pt-6 lg:pb-32">
       <header className="flex items-center justify-between gap-3">
         <PetSwitcher pets={state.pets} activeId={pet.id} onSwitch={switchPet} onAdopt={onAdopt} canAdopt={state.pets.length < MAX_PETS} />
-        <CoinChip coins={state.coins} />
+        <div className="flex items-center gap-2">
+          <CoinChip coins={state.coins} />
+          <NewGameButton petNames={state.pets.map((p) => p.name)} onConfirm={onNewGame} />
+        </div>
       </header>
 
       <main className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">

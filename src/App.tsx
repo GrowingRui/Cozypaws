@@ -5,6 +5,7 @@ import { GameProvider, useGame } from './game/GameContext'
 import { createGame, MAX_PETS, newPetId, type GameState } from './game/state'
 import { HomeScreen } from './scenes/HomeScreen'
 import { SelectScreen } from './scenes/SelectScreen'
+import { clearGame, loadGame } from './storage/save'
 
 // Walk and Study load on first visit, keeping the initial download small.
 const WalkScreen = lazy(() => import('./scenes/WalkScreen').then((m) => ({ default: m.WalkScreen })))
@@ -23,7 +24,7 @@ function Screen({ children }: { children: ReactNode }) {
 const scrollTop = () => window.scrollTo(0, 0)
 
 /** The household: tabs, plus the selection screen while adopting another pet. */
-function House() {
+function House({ onNewGame }: { onNewGame: () => void }) {
   const { state, adopt } = useGame()
   const [tab, setTab] = useState<Tab>('home')
   const [adopting, setAdopting] = useState(false)
@@ -64,7 +65,7 @@ function House() {
               }}
             />
           )}
-          {view === 'home' && <HomeScreen welcome={welcome} onAdopt={() => setAdopting(true)} />}
+          {view === 'home' && <HomeScreen welcome={welcome} onAdopt={() => setAdopting(true)} onNewGame={onNewGame} />}
           <Suspense fallback={<div className="min-h-dvh" />}>
             {view === 'walk' && <WalkScreen onDone={() => changeTab('home')} />}
             {view === 'study' && <StudyScreen onDone={() => changeTab('home')} />}
@@ -91,16 +92,20 @@ function House() {
 }
 
 export default function App() {
-  // In memory for now; saving to localStorage comes in step 6.
-  const [game, setGame] = useState<GameState | null>(null)
+  // Pick up the saved household, if there is one. GameProvider saves every change after this.
+  const [game, setGame] = useState<GameState | null>(loadGame)
+  const newGame = () => {
+    clearGame()
+    setGame(null)
+  }
 
   return (
     <div className="grain">
       <AnimatePresence mode="wait" onExitComplete={scrollTop}>
         {game ? (
           <Screen key="house">
-            <GameProvider initial={game}>
-              <House />
+            <GameProvider initial={game} persist onCleared={() => setGame(null)}>
+              <House onNewGame={newGame} />
             </GameProvider>
           </Screen>
         ) : (
