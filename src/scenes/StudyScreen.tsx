@@ -309,7 +309,7 @@ function Timer({ session, now }: { session: StudySession; now: number }) {
           onClick={() => (confirmEnd ? endStudy() : setConfirmEnd(true))}
           className={`${secondaryButton} ${confirmEnd ? 'border-berry/60 text-berry' : ''}`}
         >
-          {confirmEnd ? 'Tap again to end' : 'End session'}
+          {confirmEnd ? 'Yes, end it' : 'End session'}
         </motion.button>
       </div>
       <AnimatePresence>

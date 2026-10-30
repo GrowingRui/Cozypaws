@@ -310,7 +310,7 @@ function BagPanel({ onShop }: { onShop: () => void }) {
                     <Icon name={FOODS[f].icon} size={20} />
                   </span>
                   <span className="min-w-0 text-sm leading-tight">
-                    <span className="block truncate font-bold">{FOODS[f].name}</span>
+                    <span className="block font-bold">{FOODS[f].name}</span>
                     <span className="text-cocoa-soft">× {state.inventory[f]}</span>
                   </span>
                 </li>

@@ -446,9 +446,11 @@ function Results({ onDone }: { onDone: () => void }) {
       </ul>
 
       <div className="flex flex-wrap gap-2 text-sm font-bold">
-        <span className="flex items-center gap-1 rounded-full bg-peach-soft px-3 py-1 text-[#b5602b]">
-          <Icon name="coin" size={16} />+{s.coins} {s.coins === 1 ? 'coin' : 'coins'}
-        </span>
+        {s.coins > 0 && (
+          <span className="flex items-center gap-1 rounded-full bg-peach-soft px-3 py-1 text-[#b5602b]">
+            <Icon name="coin" size={16} />+{s.coins} {s.coins === 1 ? 'coin' : 'coins'}
+          </span>
+        )}
         <span className="rounded-full bg-lavender-soft px-3 py-1 text-[#6a55a8]">+{s.xp} XP each</span>
         {items.map(([food, n]) => (
           <span key={food} className="flex items-center gap-1 rounded-full bg-mint-soft px-3 py-1 text-[#2f7a57]">
