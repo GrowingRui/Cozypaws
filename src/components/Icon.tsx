@@ -36,6 +36,9 @@ export type IconName =
   | 'chevronLeft'
   | 'chevronRight'
   | 'restart'
+  | 'sound'
+  | 'soundOff'
+  | 'sliders'
 
 const paths: Record<IconName, React.ReactNode> = {
   cookie: (
@@ -127,6 +130,27 @@ const paths: Record<IconName, React.ReactNode> = {
     <>
       <path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3" />
       <path d="M6.5 3v4h4" />
+    </>
+  ),
+  sound: (
+    <>
+      <path d="M4 9.5h3l4.5-4v13L7 14.5H4Z" fill="currentColor" fillOpacity=".18" />
+      <path d="M4 9.5h3l4.5-4v13L7 14.5H4Z" />
+      <path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" />
+    </>
+  ),
+  soundOff: (
+    <>
+      <path d="M4 9.5h3l4.5-4v13L7 14.5H4Z" fill="currentColor" fillOpacity=".18" />
+      <path d="M4 9.5h3l4.5-4v13L7 14.5H4Z" />
+      <path d="m15.5 9.5 5 5M20.5 9.5l-5 5" />
+    </>
+  ),
+  sliders: (
+    <>
+      <path d="M4 7.5h16M4 16.5h16" />
+      <circle cx="9" cy="7.5" r="2.4" fill="var(--color-milk)" />
+      <circle cx="15" cy="16.5" r="2.4" fill="var(--color-milk)" />
     </>
   ),
   bowl: (

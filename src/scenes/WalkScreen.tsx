@@ -15,6 +15,7 @@ import { canWalk, ROUTE_ORDER, ROUTES, WALK_EVENTS, walkProgress } from '../game
 import { INK } from '../pets/parts'
 import { PetSprite } from '../pets/PetSprite'
 import { ParkScene } from './ParkScene'
+import { playSfx, WALK_SFX } from '../lib/sound'
 
 /** Where walkers stand on the path (centre x, %), leader first and furthest along. */
 const LINEUP: Record<number, { xs: number[]; width: string }> = {
@@ -110,6 +111,7 @@ export function WalkScreen({ onDone }: { onDone: () => void }) {
     const kind = pool.find(([, wt]) => (roll -= wt) < 0)?.[0] ?? 'acorn'
     const food: FoodId | undefined = kind === 'snack' ? BASIC_FOODS[Math.floor(Math.random() * BASIC_FOODS.length)] : undefined
     walkEvent(kind, food)
+    playSfx(WALK_SFX[kind])
     const walkerNames = w.petIds.map((id) => stateRef.current.pets.find((p) => p.id === id)?.name ?? '')
     setToast({ id: ++seq.current, kind, ...walkEventLine(kind, walkerNames, food) })
     setExcitedUntil(Date.now() + 1400)

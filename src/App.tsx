@@ -1,10 +1,13 @@
 import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { NavBar, type Tab } from './components/NavBar'
+import { WelcomeBack } from './components/WelcomeBack'
+import { summarizeAway, type AwaySummary } from './game/away'
 import { GameProvider, useGame } from './game/GameContext'
 import { createGame, MAX_PETS, newPetId, type GameState } from './game/state'
 import { HomeScreen } from './scenes/HomeScreen'
 import { SelectScreen } from './scenes/SelectScreen'
+import { useEventSounds } from './lib/useEventSounds'
 import { clearGame, loadGame } from './storage/save'
 
 // Walk and Study load on first visit, keeping the initial download small.
@@ -24,8 +27,9 @@ function Screen({ children }: { children: ReactNode }) {
 const scrollTop = () => window.scrollTo(0, 0)
 
 /** The household: tabs, plus the selection screen while adopting another pet. */
-function House({ onNewGame }: { onNewGame: () => void }) {
+function House({ onNewGame, away }: { onNewGame: () => void; away: AwaySummary | null }) {
   const { state, adopt } = useGame()
+  const [showAway, setShowAway] = useState(!!away)
   const [tab, setTab] = useState<Tab>('home')
   const [adopting, setAdopting] = useState(false)
   // True right after an adoption, so home plays the newcomer's welcome.
@@ -38,6 +42,8 @@ function House({ onNewGame }: { onNewGame: () => void }) {
     if (onWalk) setTab('walk')
     else if (studying) setTab('study')
   }, [onWalk, studying])
+
+  useEventSounds(state.event)
 
   const view = adopting ? 'adopt' : tab
   const changeTab = (next: Tab) => {
@@ -87,6 +93,8 @@ function House({ onNewGame }: { onNewGame: () => void }) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {showAway && away && <WelcomeBack summary={away} pets={state.pets} onClose={() => setShowAway(false)} />}
     </>
   )
 }
@@ -94,8 +102,11 @@ function House({ onNewGame }: { onNewGame: () => void }) {
 export default function App() {
   // Pick up the saved household, if there is one. GameProvider saves every change after this.
   const [game, setGame] = useState<GameState | null>(loadGame)
+  // Worked out once, from the save as it was before time caught up.
+  const [away, setAway] = useState<AwaySummary | null>(() => (game ? summarizeAway(game, Date.now()) : null))
   const newGame = () => {
     clearGame()
+    setAway(null)
     setGame(null)
   }
 
@@ -104,8 +115,11 @@ export default function App() {
       <AnimatePresence mode="wait" onExitComplete={scrollTop}>
         {game ? (
           <Screen key="house">
-            <GameProvider initial={game} persist onCleared={() => setGame(null)}>
-              <House onNewGame={newGame} />
+            <GameProvider initial={game} persist onCleared={() => {
+                setAway(null)
+                setGame(null)
+              }}>
+              <House onNewGame={newGame} away={away} />
             </GameProvider>
           </Screen>
         ) : (

@@ -5,7 +5,7 @@ import { PlayTray, TogetherTray } from '../components/CareTrays'
 import { CoinChip } from '../components/CoinChip'
 import { FoodTray, STAT_LABEL } from '../components/FoodTray'
 import { FriendsList } from '../components/FriendsList'
-import { NewGameButton } from '../components/NewGameButton'
+import { GameMenu } from '../components/GameMenu'
 import { Icon, type IconName } from '../components/Icon'
 import { Burst, type BurstKind } from '../components/Particles'
 import { PetSwitcher } from '../components/PetSwitcher'
@@ -294,7 +294,7 @@ export function HomeScreen({ onAdopt, onNewGame, welcome = false }: HomeScreenPr
         <PetSwitcher pets={state.pets} activeId={pet.id} onSwitch={switchPet} onAdopt={onAdopt} canAdopt={state.pets.length < MAX_PETS} />
         <div className="flex items-center gap-2">
           <CoinChip coins={state.coins} />
-          <NewGameButton petNames={state.pets.map((p) => p.name)} onConfirm={onNewGame} />
+          <GameMenu petNames={state.pets.map((p) => p.name)} onNewGame={onNewGame} />
         </div>
       </header>
 
