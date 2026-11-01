@@ -18,7 +18,7 @@ import type { FoodId } from '../game/items'
 import { restingMood, xpToNext } from '../game/logic'
 import { eventLine, greetingLine, idleLine } from '../game/messages'
 import { SPECIES } from '../game/pets'
-import { activePet, MAX_PETS, STAT_KEYS, type PetState, type StatKey, type TogetherGame } from '../game/state'
+import { activePet, MAX_PETS, STAT_KEYS, type GameState, type PetState, type StatKey, type TogetherGame } from '../game/state'
 import { friendLevel, friendshipOf } from '../game/together'
 import type { PetMood } from '../game/types'
 import { PetSprite } from '../pets/PetSprite'
@@ -64,11 +64,13 @@ type HomeScreenProps = {
   onAdopt: () => void
   /** Wipe the save and go back to choosing a first pet. */
   onNewGame: () => void
+  /** Replace the household with one from a save code. */
+  onLoadSave: (state: GameState) => void
   /** Play the welcome for a pet that was adopted just before this screen opened. */
   welcome?: boolean
 }
 
-export function HomeScreen({ onAdopt, onNewGame, welcome = false }: HomeScreenProps) {
+export function HomeScreen({ onAdopt, onNewGame, onLoadSave, welcome = false }: HomeScreenProps) {
   const { state, feed, care, sleep, wake, switchPet, playTogether, napTogether, dinner, socialize, claimGoal } = useGame()
   const { event } = state
   const pet = activePet(state)
@@ -303,7 +305,7 @@ export function HomeScreen({ onAdopt, onNewGame, welcome = false }: HomeScreenPr
         <PetSwitcher pets={state.pets} activeId={pet.id} onSwitch={switchPet} onAdopt={onAdopt} canAdopt={state.pets.length < MAX_PETS} />
         <div className="flex items-center gap-2">
           <CoinChip coins={state.coins} />
-          <GameMenu petNames={state.pets.map((p) => p.name)} onNewGame={onNewGame} />
+          <GameMenu onNewGame={onNewGame} onLoadSave={onLoadSave} />
         </div>
       </header>
 

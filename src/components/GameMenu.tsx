@@ -1,13 +1,23 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { motion } from 'motion/react'
-import { useBackLayer } from '../lib/backStack'
+import { useGame } from '../game/GameContext'
+import type { GameState } from '../game/state'
 import { playSfx, setSoundOn, useSoundOn } from '../lib/sound'
 import { Icon } from './Icon'
+import { SaveCodeDialog, useModal } from './SaveCodeDialog'
 import { springs } from './tones'
 
-/** Header button for settings: sound effects, and starting a new game (which asks first). */
-export function GameMenu({ petNames, onNewGame }: { petNames: string[]; onNewGame: () => void }) {
-  const [open, setOpen] = useState<'menu' | 'confirm' | null>(null)
+type GameMenuProps = {
+  onNewGame: () => void
+  /** Replace the household with one from a save code. */
+  onLoadSave: (state: GameState) => void
+}
+
+/** Header button for settings: sound effects, moving the save, and starting a new game (which asks first). */
+export function GameMenu({ onNewGame, onLoadSave }: GameMenuProps) {
+  const { state } = useGame()
+  const petNames = state.pets.map((p) => p.name)
+  const [open, setOpen] = useState<'menu' | 'move' | 'confirm' | null>(null)
 
   return (
     <>
@@ -23,25 +33,16 @@ export function GameMenu({ petNames, onNewGame }: { petNames: string[]; onNewGam
       >
         <Icon name="sliders" size={20} />
       </motion.button>
-      {open === 'menu' && <SettingsDialog onClose={() => setOpen(null)} onNewGame={() => setOpen('confirm')} />}
+      {open === 'menu' && (
+        <SettingsDialog onClose={() => setOpen(null)} onMove={() => setOpen('move')} onNewGame={() => setOpen('confirm')} />
+      )}
+      {open === 'move' && <SaveCodeDialog state={state} onLoad={onLoadSave} onClose={() => setOpen(null)} />}
       {open === 'confirm' && <ConfirmNewGame petNames={petNames} onCancel={() => setOpen(null)} onConfirm={onNewGame} />}
     </>
   )
 }
 
-/** Opens as a modal <dialog>: focus stays inside, the page behind is inert, Escape and back close it. */
-function useModal(onClose: () => void) {
-  const ref = useRef<HTMLDialogElement>(null)
-  useBackLayer(true, onClose)
-  useEffect(() => {
-    const dialog = ref.current
-    dialog?.showModal()
-    return () => dialog?.close()
-  }, [])
-  return ref
-}
-
-function SettingsDialog({ onClose, onNewGame }: { onClose: () => void; onNewGame: () => void }) {
+function SettingsDialog({ onClose, onMove, onNewGame }: { onClose: () => void; onMove: () => void; onNewGame: () => void }) {
   const ref = useModal(onClose)
   const soundOn = useSoundOn()
 
@@ -92,6 +93,21 @@ function SettingsDialog({ onClose, onNewGame }: { onClose: () => void; onNewGame
               animate={{ x: soundOn ? 20 : 0 }}
               transition={springs.pop}
             />
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={onMove}
+          className="flex min-h-14 items-center gap-3 rounded-[var(--radius-chip)] bg-cream px-3 text-left hover:bg-blush-soft active:scale-[0.98]"
+          style={{ transition: 'transform 160ms var(--ease-spring)' }}
+        >
+          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-mint-soft text-[#2f7a57]">
+            <Icon name="suitcase" size={18} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-bold leading-6">Move your pets</span>
+            <span className="block text-sm leading-5 text-cocoa-soft">Play on a new link or another device</span>
           </span>
         </button>
 

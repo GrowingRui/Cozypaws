@@ -40,6 +40,7 @@ export type IconName =
   | 'soundOff'
   | 'sliders'
   | 'check'
+  | 'suitcase'
 
 const paths: Record<IconName, React.ReactNode> = {
   cookie: (
@@ -128,6 +129,13 @@ const paths: Record<IconName, React.ReactNode> = {
   check: <path d="m5 12.5 4.5 4.5L19 7.5" strokeWidth={2.8} />,
   chevronLeft: <path d="M14.5 5.5 8 12l6.5 6.5" strokeWidth={2.6} />,
   chevronRight: <path d="M9.5 5.5 16 12l-6.5 6.5" strokeWidth={2.6} />,
+  suitcase: (
+    <>
+      <rect x="3.5" y="7.5" width="17" height="12" rx="2.5" fill="currentColor" fillOpacity=".18" />
+      <rect x="3.5" y="7.5" width="17" height="12" rx="2.5" />
+      <path d="M9 7.5V5.5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 5.5v2M3.5 12.5h17" />
+    </>
+  ),
   restart: (
     <>
       <path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3" />

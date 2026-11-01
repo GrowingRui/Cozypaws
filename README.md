@@ -67,6 +67,8 @@ Some items unlock as your pets level up or become friends. Dress your pets up fr
 
 Your game saves automatically in the browser, including walks and study sessions in progress. You can start over from **Settings → New game**.
 
+The save belongs to one browser at one web address. To play on a different link (each Vercel or Netlify deploy gets its own) or another device, open **Settings → Move your pets**, copy the save code, and paste it into the game there. On a fresh start, use **Played before? Paste a save code**. Share your stable production address, not a per-deploy link, so players keep their save across updates.
+
 ## Built with
 
 React, TypeScript, Vite, Tailwind CSS and Motion. The pets are drawn and animated in code as SVG.

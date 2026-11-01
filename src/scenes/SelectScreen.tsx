@@ -20,9 +20,11 @@ type SelectScreenProps = {
   /** Names already used in the household. */
   takenNames?: string[]
   spotsLeft?: number
+  /** First screen only: open the save code dialog to bring back pets from another link or device. */
+  onRestore?: () => void
 }
 
-export function SelectScreen({ onAdopt, onCancel, takenNames = [], spotsLeft }: SelectScreenProps) {
+export function SelectScreen({ onAdopt, onCancel, onRestore, takenNames = [], spotsLeft }: SelectScreenProps) {
   const [index, setIndex] = useState(0)
   const [direction, setDirection] = useState<1 | -1>(1)
   const [names, setNames] = useState(
@@ -109,6 +111,16 @@ export function SelectScreen({ onAdopt, onCancel, takenNames = [], spotsLeft }: 
             ? `There’s room for ${spotsLeft} more ${spotsLeft === 1 ? 'friend' : 'friends'}.`
             : 'Meet each little one, then choose a name.'}
         </p>
+        {onRestore && (
+          <button
+            type="button"
+            onClick={onRestore}
+            className="self-center rounded-full px-3 py-1.5 text-sm font-bold text-berry underline decoration-berry/30 decoration-2 underline-offset-4 hover:decoration-berry active:scale-[0.97] lg:self-start lg:-ml-3"
+            style={{ transition: 'transform 160ms var(--ease-spring)' }}
+          >
+            Played before? Paste a save code
+          </button>
+        )}
       </header>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:items-start">

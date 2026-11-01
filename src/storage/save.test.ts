@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { gameReducer } from '../game/logic'
 import { createGame, type GameState } from '../game/state'
-import { parseSave } from './save'
+import { exportCode, importCode, parseSave } from './save'
 
 const T0 = 1_000_000
 const MIN = 60_000
@@ -62,5 +62,25 @@ describe('parseSave', () => {
     g = gameReducer(g, { type: 'tick', now: T0 + 27 * MIN })
     expect(g.study?.phase).toBe('break')
     expect(g.study?.completedRounds).toBe(1)
+  })
+})
+
+describe('save codes', () => {
+  it('round-trip a household, names with any characters included', () => {
+    const g = gameReducer(home(), { type: 'adopt', pet: { id: 'c', species: 'kitten', name: '小花 🌸' }, now: T0 })
+    expect(importCode(exportCode(g))).toEqual({ ...g, event: null })
+  })
+
+  it('survive spaces and line breaks added when pasting', () => {
+    const code = exportCode(home())
+    const mangled = `  ${code.slice(0, 20)}\n${code.slice(20, 50)} ${code.slice(50)}\n`
+    expect(importCode(mangled)).toEqual({ ...home(), event: null })
+  })
+
+  it('reject anything that is not a save code', () => {
+    expect(importCode('')).toBeNull()
+    expect(importCode('hello')).toBeNull()
+    expect(importCode('COZYPAWS-not base64!!')).toBeNull()
+    expect(importCode('COZYPAWS-' + btoa('{"version":2}'))).toBeNull()
   })
 })

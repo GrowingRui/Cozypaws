@@ -10,7 +10,8 @@ import { HomeScreen } from './scenes/HomeScreen'
 import { SelectScreen } from './scenes/SelectScreen'
 import { useBackLayer } from './lib/backStack'
 import { useEventSounds } from './lib/useEventSounds'
-import { clearGame, loadGame } from './storage/save'
+import { SaveCodeDialog } from './components/SaveCodeDialog'
+import { clearGame, loadGame, saveGame } from './storage/save'
 
 // Walk and Study load on first visit, keeping the initial download small.
 const WalkScreen = lazy(() => import('./scenes/WalkScreen').then((m) => ({ default: m.WalkScreen })))
@@ -29,7 +30,9 @@ function Screen({ children }: { children: ReactNode }) {
 const scrollTop = () => window.scrollTo(0, 0)
 
 /** The household: tabs, plus the selection screen while adopting another pet. */
-function House({ onNewGame, away }: { onNewGame: () => void; away: AwaySummary | null }) {
+type HouseProps = { onNewGame: () => void; onLoadSave: (state: GameState) => void; away: AwaySummary | null }
+
+function House({ onNewGame, onLoadSave, away }: HouseProps) {
   const { state, adopt } = useGame()
   const [showAway, setShowAway] = useState(!!away)
   const [tab, setTab] = useState<Tab>('home')
@@ -81,7 +84,7 @@ function House({ onNewGame, away }: { onNewGame: () => void; away: AwaySummary |
               }}
             />
           )}
-          {view === 'home' && <HomeScreen welcome={welcome} onAdopt={() => setAdopting(true)} onNewGame={onNewGame} />}
+          {view === 'home' && <HomeScreen welcome={welcome} onAdopt={() => setAdopting(true)} onNewGame={onNewGame} onLoadSave={onLoadSave} />}
           <Suspense fallback={<div className="min-h-dvh" />}>
             {view === 'walk' && <WalkScreen onDone={() => changeTab('home')} />}
             {view === 'study' && <StudyScreen onDone={() => changeTab('home')} />}
@@ -116,30 +119,44 @@ export default function App() {
   const [game, setGame] = useState<GameState | null>(loadGame)
   // Worked out once, from the save as it was before time caught up.
   const [away, setAway] = useState<AwaySummary | null>(() => (game ? summarizeAway(game, Date.now()) : null))
+  // Bumped when a save code replaces the household, so the game starts fresh from it.
+  const [loads, setLoads] = useState(0)
+  const [restoring, setRestoring] = useState(false)
   const newGame = () => {
     clearGame()
     setAway(null)
     setGame(null)
+  }
+  const loadSave = (next: GameState) => {
+    saveGame(next)
+    setAway(null)
+    setRestoring(false)
+    setGame(next)
+    setLoads((n) => n + 1)
   }
 
   return (
     <div className="grain">
       <AnimatePresence mode="wait" onExitComplete={scrollTop}>
         {game ? (
-          <Screen key="house">
+          <Screen key={`house-${loads}`}>
             <GameProvider initial={game} persist onCleared={() => {
                 setAway(null)
                 setGame(null)
               }}>
-              <House onNewGame={newGame} away={away} />
+              <House onNewGame={newGame} onLoadSave={loadSave} away={away} />
             </GameProvider>
           </Screen>
         ) : (
           <Screen key="first">
-            <SelectScreen onAdopt={(pet) => setGame(createGame({ id: newPetId(), ...pet }, Date.now()))} />
+            <SelectScreen
+              onAdopt={(pet) => setGame(createGame({ id: newPetId(), ...pet }, Date.now()))}
+              onRestore={() => setRestoring(true)}
+            />
           </Screen>
         )}
       </AnimatePresence>
+      {restoring && !game && <SaveCodeDialog onLoad={loadSave} onClose={() => setRestoring(false)} />}
     </div>
   )
 }

@@ -4,6 +4,9 @@ import { createGame, createPet, type GameState, type PetState } from '../game/st
  * The household is saved to localStorage after every change, so closing the tab never loses progress.
  * Walks and study sessions are stored with real timestamps, so they pick up where they were on reload
  * (or finish, if their time ran out while the game was closed).
+ *
+ * localStorage belongs to one web address in one browser. A save code carries the household to
+ * another address (a new deploy link) or another device.
  */
 export const SAVE_KEY = 'cozypaws:save'
 
@@ -64,12 +67,56 @@ export function loadGame(): GameState | null {
   }
 }
 
+const toFile = (state: GameState) => JSON.stringify({ version: 2, savedAt: Date.now(), state } satisfies SaveFile)
+
+let persistAsked = false
+
 export function saveGame(state: GameState) {
-  const file: SaveFile = { version: 2, savedAt: Date.now(), state }
   try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify(file))
+    localStorage.setItem(SAVE_KEY, toFile(state))
   } catch {
     // Full or blocked storage shouldn't stop the game.
+    return
+  }
+  // Ask once to keep the save when the browser clears space. Browsers may say no; that's fine.
+  if (!persistAsked) {
+    persistAsked = true
+    navigator.storage?.persist?.().catch(() => {})
+  }
+}
+
+/** True when this browser keeps what the game writes (false in some private modes and in-app browsers). */
+export function canSave(): boolean {
+  try {
+    const probe = `${SAVE_KEY}:probe`
+    localStorage.setItem(probe, '1')
+    localStorage.removeItem(probe)
+    return true
+  } catch {
+    return false
+  }
+}
+
+const CODE_PREFIX = 'COZYPAWS-'
+
+/** The household as one line of text, to paste into the game somewhere else. */
+export function exportCode(state: GameState): string {
+  const bytes = new TextEncoder().encode(toFile(state))
+  let binary = ''
+  for (const b of bytes) binary += String.fromCharCode(b)
+  return CODE_PREFIX + btoa(binary)
+}
+
+/** Reads a save code back into a household, or null if it isn't one. Spaces and line breaks from chat apps are ignored. */
+export function importCode(code: string): GameState | null {
+  const body = code.replace(/\s+/g, '')
+  if (!body.toUpperCase().startsWith(CODE_PREFIX)) return null
+  try {
+    const binary = atob(body.slice(CODE_PREFIX.length))
+    const text = new TextDecoder().decode(Uint8Array.from(binary, (c) => c.charCodeAt(0)))
+    return parseSave(text)
+  } catch {
+    return null
   }
 }
 
